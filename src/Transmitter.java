@@ -1,5 +1,10 @@
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Transmitter {
@@ -7,37 +12,50 @@ public class Transmitter {
     private final DatagramSocket datagramSocket;
     private final InetAddress inetAddress;
 
+    private final int PORT = 1234;
+
     public Transmitter(DatagramSocket datagramSocket, InetAddress inetAddress) {
         this.datagramSocket = datagramSocket;
         this.inetAddress = inetAddress;
     }
 
-    public void sendThenReceive() {
-        Scanner scanner = new Scanner(System.in);
-
-        while (true) {
-            try {
-                // read input from console
-                String messageToSend = scanner.nextLine();
-                byte[] buffer = messageToSend.getBytes();
-
-                DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, 1234);
-                datagramSocket.send(datagramPacket);
-
-                // wait for reply from receiver and override datagramPacket
-                datagramSocket.receive(datagramPacket);
-                String messageFromServer = new String(datagramPacket.getData(), 0, datagramPacket.getLength());
-                System.out.println("The server says you said: " + messageFromServer);
-            } catch (IOException e) {
-                e.printStackTrace();
-                break;
-            }
-        }
+    public static void main(String[] args) throws IOException, InterruptedException {
+        Transmitter transmitter = new Transmitter(new DatagramSocket(), InetAddress.getByName(args[1]));
+        System.out.println("Send datagram packets to a server.");
+        transmitter.sendData(args[0]);
     }
 
-    public static void main(String[] args) throws SocketException, UnknownHostException {
-        Transmitter transmitter = new Transmitter(new DatagramSocket(), InetAddress.getByName("localhost"));
-        System.out.println("Send datagram packets to a server.");
-        transmitter.sendThenReceive();
+    private void sendData(String filePath) throws IOException, InterruptedException {
+        File file = new File(filePath);
+
+        // send initial packet
+        for (int i = 0; i < 3; i++) {
+            String initialData = "0" +
+                                 file.getName() + "\u0000" +
+                                 file.length();
+            sendAndWait(initialData);
+        }
+
+        // send text of file
+        int byteRead = 0;
+
+        FileInputStream fileInputStream = new FileInputStream(file);
+        while (byteRead != file.length()) {
+            byte[] bFile = new byte[256];
+            byteRead += fileInputStream.read(bFile);
+
+            sendAndWait(byteRead + Arrays.toString(bFile));
+        }
+        fileInputStream.close();
+
+        // send end packet
+    }
+
+    private void sendAndWait(String data) throws IOException, InterruptedException {
+        byte[] buffer = data.getBytes();
+        DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
+        datagramSocket.send(datagramPacket);
+
+        Thread.sleep(1000);
     }
 }
