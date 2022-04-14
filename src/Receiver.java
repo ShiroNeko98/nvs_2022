@@ -5,6 +5,8 @@ import java.net.SocketException;
 
 public class Receiver {
 
+    private final String NULL_TERMINATED = "\u0000";
+
     private final DatagramSocket datagramSocket;
     private final byte[] buffer = new byte[256];
 
@@ -24,10 +26,7 @@ public class Receiver {
                 String messageFromClient = new String(datagramPacket.getData(), 0, datagramPacket.getLength());
                 System.out.println("Message from client: " + messageFromClient);
 
-                // send back message
-                datagramPacket = new DatagramPacket(buffer, buffer.length, datagramPacket.getAddress(),
-                        datagramPacket.getPort());
-                datagramSocket.send(datagramPacket);
+                messageFromClient.split(String.valueOf((char) 0));
             } catch (IOException e) {
                 e.printStackTrace();
                 break;
