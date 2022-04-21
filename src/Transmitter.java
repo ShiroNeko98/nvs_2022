@@ -36,7 +36,7 @@ public class Transmitter {
         setOptionalParameters(args);
 
         // start transmitter
-        System.out.println("Starting transmitter ...");
+        System.out.println("Starting transmission ...");
 
         Transmitter transmitter = new Transmitter(new DatagramSocket(), InetAddress.getByName(args[1]));
         transmitter.sendData(args[0]);
@@ -80,6 +80,7 @@ public class Transmitter {
             sendAndWait(initialData);
         }
 
+        // send file content
         byte[] bytesOfFile = sendFileContent(file);
 
         // send end packet with md5 hash
@@ -88,7 +89,7 @@ public class Transmitter {
         byte[] hash = md.digest();
 
         for (int i = 0; i < 3; i++) {
-            String endData = "-1" + new String(hash);
+            String endData = "-1" + NULL_TERMINATED + new String(hash);
             sendAndWait(endData);
         }
     }
@@ -98,7 +99,7 @@ public class Transmitter {
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
         datagramSocket.send(datagramPacket);
 
-        Thread.sleep(1000);
+        Thread.sleep(1000); // TODO optional param vielleicht
     }
 
     /**
@@ -110,6 +111,7 @@ public class Transmitter {
      * @throws InterruptedException problem with sending packets
      */
     private byte[] sendFileContent(File file) throws IOException, InterruptedException {
+        int sequenceNumber = 1;
         int byteRead = 0;
         int copyStartIndex = 0;
         byte[] bytesOfFile = new byte[(int) file.length()];
@@ -130,7 +132,8 @@ public class Transmitter {
             }
             copyStartIndex = byteRead;
 
-            sendAndWait(byteRead + NULL_TERMINATED + Arrays.toString(bFile));
+            sendAndWait(sequenceNumber + NULL_TERMINATED + Arrays.toString(bFile));
+            sequenceNumber++;
         }
 
         fileInputStream.close();
