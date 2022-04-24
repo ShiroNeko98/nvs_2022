@@ -12,12 +12,10 @@
                 Console.WriteLine(HelpText);
                 Environment.Exit(0);
             }
-
-            DirPath = args[1];
-
+            
             try
             {
-                
+                DirPath = args[1];
             }
             catch (Exception)
             {

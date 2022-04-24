@@ -67,19 +67,13 @@ namespace Transmitter
                 int sequence = 1;
 
                 IList<string> dataChunks = GetChunks(message,1024).ToList();
-                
-                if (dataChunks.Count > 9998)
-                {
-                    throw new Exception("File to large.");
-                }
-                
+
                 foreach (string chunk in dataChunks)
                 {
                     DataPacket dataPacket = new DataPacket()
                     {
-                        Sequence = sequence.ToString().PadLeft(4, '0'),
-                        Data = chunk,
-                        PacketMD5 = EncryptionHelper.ComputeMD5(chunk)
+                        Sequence = sequence.ToString(),
+                        Data = chunk
                     };
                     sequence++;
                     _dataPackets.Add(dataPacket);
@@ -87,16 +81,15 @@ namespace Transmitter
 
                 _initPacket = new InitPacket()
                 {
-                    Sequence = "0000",
+                    Sequence = "0",
                     FileName = filename[..Math.Min(filename.Length,1024)],
-                    PacketMD5 = EncryptionHelper.ComputeMD5(filename[..Math.Min(filename.Length,1024)]),
                     TotalPacketNumber = sequence -1
                 };
 
                 _endPacket = new EndPacket()
                 {
                     FileMD5 = messageMd5,
-                    Sequence = "9999"
+                    Sequence = "-1"
                 };
                 
                 Console.WriteLine("Packets Created:\r\n Total Number: " + (sequence -1 ) +"\r\n");

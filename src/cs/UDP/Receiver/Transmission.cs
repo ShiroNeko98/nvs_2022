@@ -7,7 +7,6 @@ namespace Receiver
         public void AddPacket(string s);
         public bool CheckTransmission();
         public void WriteTransmission(string dirToWrite);
-
     }
 
     public class Transmission : ITransmission
@@ -83,7 +82,15 @@ namespace Receiver
             _dataPackets = _dataPackets.OrderBy(d => d.Sequence).ToList();
             string data = _dataPackets.Aggregate("", (current, packet) => current + packet.Data);
             string hash = EncryptionHelper.ComputeMD5(data);
-            return _endPacket.FileMD5.Equals(hash,StringComparison.InvariantCultureIgnoreCase);
+
+            bool result = _endPacket.FileMD5.Equals(hash, StringComparison.InvariantCultureIgnoreCase);
+
+            if (result)
+            {
+                return true;
+            }
+            Console.WriteLine("Received packages: " + _dataPackets.Count);
+            return false;
         }
 
         public void WriteTransmission(string dirToWrite)
