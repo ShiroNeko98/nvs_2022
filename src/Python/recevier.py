@@ -14,6 +14,7 @@ s.bind((host,port))
 addr = (host,port)
 buf=2000
 
+startpacket,addr = s.recvfrom(buf)
 data,addr = s.recvfrom(buf)
 print("Received File:",data.strip())
 f = open('new file.txt','wb')
