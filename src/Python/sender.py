@@ -24,6 +24,7 @@ file_name= sys.argv[2].encode('utf-8')
 
 #s.sendto(file_name,addr)
 startpaket = str(sequenznummer).encode('utf-8') + b'\u0000' + str(gesamtanzahl).encode('utf-8') + b'\u0000' + file_name
+print("Sending startpacket....")
 s.sendto(startpaket,addr)
 sequenznummer = sequenznummer + 1
 
@@ -42,7 +43,7 @@ data = f.read(buf)
 packet = str(sequenznummer).encode('utf-8') + b'\u0000' + data
 
 while (data):
-
+    print("Sending....")
     if(s.sendto(packet,addr)):
         data = f.read(buf)
         if(data):
@@ -50,6 +51,7 @@ while (data):
             sequenznummer = sequenznummer + 1
 
 endpacket = result.encode('utf-8') + b'\u0000' + str(gesamtanzahl).encode('utf-8')
+print("Sending endpacket....")
 s.sendto(endpacket,addr)
 
 
