@@ -16,7 +16,8 @@
             }
             else
             {
-                Console.WriteLine("Transmission failed check!");
+                Console.Write("Content received: " + transmission.GetTransmissionContent());
+                Console.WriteLine("\r\nTransmission failed check!");
             }
             
             Environment.Exit(0);

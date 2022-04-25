@@ -29,7 +29,7 @@ namespace Receiver
                 try
                 {
                     _initialPacket = new InitialPacket(s);
-                    Console.WriteLine($"Received init Packet for File: {_initialPacket.FileName}\r\n Expecting: {_initialPacket.FileSize} Packets.");
+                    Console.WriteLine($"Received init Packet for File: {_initialPacket.FileName}\r\nExpecting: {_initialPacket.FileSize} Packets.");
                     return;
                 }
                 catch (Exception)
@@ -84,11 +84,15 @@ namespace Receiver
             string hash = EncryptionHelper.ComputeMD5(data);
 
             bool result = _endPacket.FileMD5.Equals(hash, StringComparison.InvariantCultureIgnoreCase);
-
+            
+            
             if (result)
             {
                 return true;
             }
+            
+            Console.WriteLine("Received Hash: " + _endPacket.FileMD5);
+            Console.WriteLine("Computed Hash: " + hash);
             Console.WriteLine("Received packages: " + _dataPackets.Count);
             return false;
         }
