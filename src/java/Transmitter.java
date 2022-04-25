@@ -1,6 +1,9 @@
+package java;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -75,8 +78,8 @@ public class Transmitter {
         // send initial packet
         for (int i = 0; i < 3; i++) {
             String initialData = "0" + NULL_TERMINATED +
-                                 file.getName() + NULL_TERMINATED +
-                                 file.length();
+                                 (file.length() / DATA_SIZE) + NULL_TERMINATED +
+                                 file.getName();
             sendAndWait(initialData);
         }
 
@@ -86,10 +89,10 @@ public class Transmitter {
         // send end packet with md5 hash
         MessageDigest md = MessageDigest.getInstance("MD5");
         md.update(bytesOfFile);
-        byte[] hash = md.digest();
+        String hash = new BigInteger(1, md.digest()).toString(16);
 
         for (int i = 0; i < 3; i++) {
-            String endData = "-1" + NULL_TERMINATED + new String(hash);
+            String endData = "-1" + NULL_TERMINATED + hash;
             sendAndWait(endData);
         }
     }
