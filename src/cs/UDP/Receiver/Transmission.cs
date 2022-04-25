@@ -82,9 +82,8 @@ namespace Receiver
             _dataPackets = _dataPackets.OrderBy(d => d.Sequence).ToList();
             string data = _dataPackets.Aggregate("", (current, packet) => current + packet.Data);
             string hash = EncryptionHelper.ComputeMD5(data);
-
-            bool result = _endPacket.FileMD5.Equals(hash, StringComparison.InvariantCultureIgnoreCase);
             
+            bool result = _endPacket.FileMD5.Equals(hash, StringComparison.InvariantCultureIgnoreCase);
             
             if (result)
             {
