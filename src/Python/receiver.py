@@ -1,12 +1,13 @@
 # ----- receiver.py -----
 
-#!/usr/bin/env python
+#usage  python receiver.py file/path
+
 
 from socket import *
 import sys
 import select
 
-host="127.0.0.1"
+host="0.0.0.0"
 port = 11000
 s = socket(AF_INET,SOCK_DGRAM)
 s.bind((host,port))
@@ -15,11 +16,13 @@ addr = (host,port)
 buf=2000
 
 startpacket,addr = s.recvfrom(buf)
+print("startpacket:" + str(startpacket))
 data,addr = s.recvfrom(buf)
-print("Received File:",data.strip())
-f = open('new file.txt','wb')
+print("Received File:",data.strip(b'1'))
+f = open(sys.argv[1],'wb')
 
-data,addr = s.recvfrom(buf)
+
+
 try:
     while(data.decode('utf-8')):
         f.write(data)
@@ -28,4 +31,5 @@ try:
 except timeout:
     f.close()
     s.close()
+    print("endpacket:" + str(data))
     print("File Downloaded")
