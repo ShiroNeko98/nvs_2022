@@ -1,52 +1,61 @@
-# ----- receiver.py -----
+# ----- sender.py ------
 
-#usage  python receiver.py file/path
-
-import hashlib
+# usage python sender.py localhost test.txt
+import os
 from socket import *
 import sys
-import select
+import hashlib
 
-host="0.0.0.0"
+s = socket(AF_INET, SOCK_DGRAM)
+host = sys.argv[1]
 port = 11000
-s = socket(AF_INET,SOCK_DGRAM)
-s.bind((host,port))
-nummer = 0
+buf = 1024
+sequenznummer = 0
 
-addr = (host,port)
-buf=2000
-file_name,addr = s.recvfrom(buf)
-startpacket,addr = s.recvfrom(buf)
-#print("startpacket:" + str(startpacket))
+addr = (host, port)
 
-print("Received File:",file_name)
-f = open(sys.argv[1],'wb')
+path = sys.argv[2]
+size = os.path.getsize(path)
+gesamtanzahl = int(size / buf) + 1
 
-#-----------First package------------------
-data,addr = s.recvfrom(buf)
-f.write(data[data.find(b"\u0000")+1:].removeprefix(b'u0000'))
+file_name = sys.argv[2].encode('utf-8')
 
-try:
-    while(data):
-        s.settimeout(2)
-        data, addr = s.recvfrom(buf)
-        nummer+=1
-        if(data[0] != 45):  #just checks if first bytearray is -1, aka endpacket
-            f.write(data[data.find(b"\u0000")+1:].removeprefix(b'u0000'))
-except timeout:
-    f.close()
-    s.close()
-    #print("endpacket:" + str(data))
-    print("File Downloaded")
-    print("Number of packages received: " + str(nummer))
+# ----Startpaket senden-----
 
-f = open(sys.argv[1], "rb")
-md5_data = f.read()
+# s.sendto(file_name,addr)
+startpaket = str(sequenznummer).encode('utf-8') + b'\x00' + str(gesamtanzahl).encode('utf-8') + b'\x00' + file_name
+#s.sendto(file_name, addr)
+
+print("Sending startpacket....")
+s.sendto(startpaket, addr)
+sequenznummer = sequenznummer + 1
+
+# ----Open file for md5 hash-----
+f = open(sys.argv[2], "rb")
+md5_data = f.read(size)
 result = hashlib.md5(md5_data).hexdigest()
 f.close()
 
+# ----Open file for transmission-----
+##print(result)
+f = open(sys.argv[2], "rb")
 
-data = data[data.find(b"\u0000")+1:].removeprefix(b'u0000')
+data = f.read(buf)
+packet = str(sequenznummer).encode('utf-8') + b'\x00' + data
 
-if data == bytes(result, 'ascii'):
-    print("packet richtig bekommen!!!")
+while (data):
+    print("Sending....")
+    print(packet)
+    if (s.sendto(packet, addr)):
+        data = f.read(buf)
+        if (data):
+            sequenznummer = sequenznummer + 1
+            packet = str(sequenznummer).encode('utf-8') + b'\x00' + data
+
+
+endpacket = b'-1' + b'\x00' + result.encode('utf-8')
+print("Sending endpacket....")
+s.sendto(endpacket, addr)
+
+s.close()
+f.close()
