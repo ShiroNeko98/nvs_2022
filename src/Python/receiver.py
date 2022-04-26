@@ -19,17 +19,17 @@ buf=2000
 
 data,addr = s.recvfrom(buf)
 while(data[0] == 48):
-    cazzo = data
+    temp_data = data
     data, addr = s.recvfrom(buf)
 
 
 
-cazzo = cazzo.split(b'\x00')
+temp_data = temp_data.split(b'\x00')
 
 #print("startpacket:" + str(startpacket))
 
-print("Received File:",cazzo[2])
-f = open(cazzo[2],'wb')
+print("Received File:",temp_data[2])
+f = open(temp_data[2],'wb')
 data = data.split(b'\x00')
 #-----------First package------------------
 
@@ -50,7 +50,7 @@ except timeout:
     print("File Downloaded")
     print("Number of packages received: " + str(nummer))
 
-f = open(cazzo[2], "rb")
+f = open(temp_data[2], "rb")
 md5_data = f.read()
 result = hashlib.md5(md5_data).hexdigest()
 f.close()
