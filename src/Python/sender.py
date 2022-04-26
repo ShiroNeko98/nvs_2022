@@ -16,7 +16,7 @@ addr = (host, port)
 
 path = sys.argv[2]
 size = os.path.getsize(path)
-gesamtanzahl = int(size / buf)
+gesamtanzahl = int(size / buf) + 1
 
 file_name = sys.argv[2].encode('utf-8')
 
@@ -45,6 +45,7 @@ packet = str(sequenznummer).encode('utf-8') + b'\u0000' + data
 
 while (data):
     print("Sending....")
+    print(packet)
     if (s.sendto(packet, addr)):
         data = f.read(buf)
         if (data):
