@@ -41,7 +41,6 @@ try:
         data, addr = s.recvfrom(buf)
         data = data.split(b'\x00')
         if(data[0] != b'-1'):
-            print(data)
             nummer+=1
             f.write(data[1])
 except timeout:
@@ -51,7 +50,7 @@ except timeout:
     print("File Downloaded")
     print("Number of packages received: " + str(nummer))
 
-f = open(sys.argv[1], "rb")
+f = open(cazzo[2], "rb")
 md5_data = f.read()
 result = hashlib.md5(md5_data).hexdigest()
 f.close()
