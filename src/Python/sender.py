@@ -24,7 +24,7 @@ file_name = sys.argv[2].encode('utf-8')
 
 # s.sendto(file_name,addr)
 startpaket = str(sequenznummer).encode('utf-8') + b'\u0000' + str(gesamtanzahl).encode('utf-8') + b'\u0000' + file_name
-
+s.sendto(file_name, addr)
 
 print("Sending startpacket....")
 s.sendto(startpaket, addr)
