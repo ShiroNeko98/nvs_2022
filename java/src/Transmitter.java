@@ -5,14 +5,14 @@ import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.nio.charset.StandardCharsets;
 
 public class Transmitter {
+    private static int SLEEP = 1000;
     private static int DATA_SIZE = 1472;
-    private static int PORT = 1234;
+    private static int PORT = 11000;
 
     private final DatagramSocket datagramSocket;
     private final InetAddress inetAddress;
@@ -40,8 +40,8 @@ public class Transmitter {
         // start transmitter
         System.out.println("Starting transmission ...");
 
-        Transmitter transmitter = new Transmitter(new DatagramSocket(), InetAddress.getByName(args[1]));
-        transmitter.sendData(args[0]);
+        Transmitter transmitter = new Transmitter(new DatagramSocket(), InetAddress.getByName(args[0]));
+        transmitter.sendData(args[1]);
 
         System.out.println("File transmitted. Closing program ...");
     }
@@ -51,7 +51,8 @@ public class Transmitter {
                          "Optional:\n" +
                          "-h ... print help page\n" +
                          "-s <integer> ... set size of data\n" +
-                         "-p <integer> ... set port");
+                         "-p <integer> ... set port\n" +
+                         "-sl <integer> ... sleep timer");
     }
 
     private static void setOptionalParameters(String[] args) {
@@ -64,6 +65,9 @@ public class Transmitter {
             } else if (param.equals("-p")) {
                 i++;
                 PORT = Integer.parseInt(args[i]);
+            } else if (param.equals("-sl")) {
+                i++;
+                SLEEP = Integer.parseInt(args[i]);
             } else {
                 System.out.println("ERROR: not supported parameter " + param + " found");
                 System.exit(1);
@@ -101,7 +105,7 @@ public class Transmitter {
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
         datagramSocket.send(datagramPacket);
 
-        Thread.sleep(1000); // TODO optional param vielleicht
+        Thread.sleep(SLEEP);
     }
 
     /**
