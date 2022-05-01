@@ -14,8 +14,7 @@ s.bind((host,port))
 nummer = 0
 
 addr = (host,port)
-buf=1024
-#file_name,addr = s.recvfrom(buf)
+buf=2000
 
 data,addr = s.recvfrom(buf)
 while(data[0] == 48):
@@ -23,13 +22,10 @@ while(data[0] == 48):
     temp_data = data
     data, addr = s.recvfrom(buf)
 
-
-
 temp_data = temp_data.split(b'\x00')
 complete = data[1]
 if complete == 0:
     complete = 1
-#print("startpacket:" + str(startpacket))
 
 print("Received File:",temp_data[2])
 f = open(temp_data[2],'wb')
@@ -63,8 +59,6 @@ l = open("log.txt",'a')
 l.write("Transmission ip: " + host + "\nTransmission port: " + str(port) + "\nPackets received " + str(nummer) + "/" + str(complete)
         + "\nLocaltime: " + str(datetime.datetime.now()) + "\nTime needed for transmission: " + str(toc - tic) + "\n--------------------------------------------\n")
 l.close()
-
-
 
 print("calculated hash: " + str(result))
 print("received hash data: " + str(data[1]))
