@@ -13,10 +13,10 @@ namespace Receiver
     {
 
         public bool IsEnd;
-        private InitialPacket _initialPacket;
+        public static InitialPacket _initialPacket;
         private EndPacket _endPacket;
         private ProgressBar _progressBar;
-        private IList<DataPacket> _dataPackets = new List<DataPacket>();
+        public static IList<DataPacket> _dataPackets = new List<DataPacket>();
 
         public void AddPacket(string s)
         {
