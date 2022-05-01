@@ -14,7 +14,7 @@ s.bind((host,port))
 nummer = 0
 
 addr = (host,port)
-buf=2000
+buf=1024
 #file_name,addr = s.recvfrom(buf)
 
 data,addr = s.recvfrom(buf)
