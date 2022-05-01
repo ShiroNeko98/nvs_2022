@@ -40,7 +40,7 @@ f.write(data[1])
 nummer+=1
 try:
     while (data):
-        s.settimeout(2)
+        s.settimeout(1)
         data, addr = s.recvfrom(buf)
         data = data.split(b'\x00')
         if(data[0] != b'-1'):
@@ -59,9 +59,9 @@ result = hashlib.md5(md5_data).hexdigest()
 f.close()
 
 #transmission ip&port, received x/y packets, zeit, localtime
-l = open("logtoDo.txt",'w')
+l = open("log.txt",'a')
 l.write("Transmission ip: " + host + "\nTransmission port: " + str(port) + "\nPackets received " + str(nummer) + "/" + str(complete)
-        + "\nLocaltime: " + str(datetime.datetime.now()) + "\nTime needed for transmission: " + str(toc - tic))
+        + "\nLocaltime: " + str(datetime.datetime.now()) + "\nTime needed for transmission: " + str(toc - tic) + "\n--------------------------------------------\n")
 l.close()
 
 
