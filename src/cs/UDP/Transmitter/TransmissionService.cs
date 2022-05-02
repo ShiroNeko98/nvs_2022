@@ -123,7 +123,6 @@ namespace Transmitter
                         break;
                     }
                 }
-
                 yield return bytes.ToArray();
             }
         }

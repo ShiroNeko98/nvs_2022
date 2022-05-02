@@ -23,8 +23,6 @@ namespace Transmitter
 
         public byte[] GetBytes()
         {
-            //this is dumb! 
-            // like Arrays.toString() in java i guess ?? 
             string sb = "[" + string.Join(",", Data) + "]";
             
             string packetString = Sequence + "\u0000" 

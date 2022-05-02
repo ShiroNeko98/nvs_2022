@@ -12,7 +12,6 @@ namespace Receiver
     public class Transmission : ITransmission
     {
 
-        
         public bool IsEnd;
         public TimeSpan timeElapsed;
         private DateTime _time;
@@ -136,7 +135,5 @@ namespace Receiver
 
             return array;
         }
-        
-        
     }
 }
