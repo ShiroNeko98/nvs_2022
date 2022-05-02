@@ -5,18 +5,21 @@ namespace Receiver
     public interface ITransmission
     {
         public void AddPacket(string s);
-        public bool CheckTransmission();
+        public bool CheckTransmission(string dirToWrite);
         public void WriteTransmission(string dirToWrite);
     }
 
     public class Transmission : ITransmission
     {
 
+        
         public bool IsEnd;
-        public static InitialPacket _initialPacket;
+        public TimeSpan timeElapsed;
+        private DateTime _time;
+        public  InitialPacket _initialPacket;
         private EndPacket _endPacket;
         private ProgressBar _progressBar;
-        public static IList<DataPacket> _dataPackets = new List<DataPacket>();
+        public  IList<DataPacket> _dataPackets = new List<DataPacket>();
 
         public void AddPacket(string s)
         {
@@ -28,6 +31,7 @@ namespace Receiver
             {
                 try
                 {
+                    _time = DateTime.Now;
                     _initialPacket = new InitialPacket(s);
                     Console.WriteLine($"Received init Packet for File: {_initialPacket.FileName}\r\nExpecting: {_initialPacket.FileSize} Packets.");
                     return;
@@ -42,6 +46,7 @@ namespace Receiver
             {
                 try
                 {
+                    timeElapsed =  DateTime.Now - _time;
                     _endPacket = new EndPacket(s);
                     _progressBar.Dispose();
                     Console.WriteLine("Received end Packet!");
@@ -72,7 +77,7 @@ namespace Receiver
             }
         }
 
-        public bool CheckTransmission()
+        public bool CheckTransmission(string dirToWrite)
         {
             if (!IsEnd)
             {
@@ -80,41 +85,58 @@ namespace Receiver
             }
             
             _dataPackets = _dataPackets.OrderBy(d => d.Sequence).ToList();
-            string data = _dataPackets.Aggregate("", (current, packet) => current + packet.Data);
-            string hash = EncryptionHelper.ComputeMD5(data);
+            List<byte> bytes =  new List<byte>();
+            byte[] data = _dataPackets.Aggregate(bytes, (list, packet) =>
+            {
+                list.AddRange(packet.Data);
+                return list;
+            }).ToArray();
+
+            data = TrimEnd(data);
             
-            bool result = _endPacket.FileMD5.Equals(hash, StringComparison.InvariantCultureIgnoreCase);
+            string hash = EncryptionHelper.ComputeMD5(data.Reverse().ToArray());
+            
+            bool result = _endPacket.FileMd5.Equals(hash, StringComparison.InvariantCultureIgnoreCase);
+           
             
             if (result)
             {
-                return true;
+                WriteTransmission(dirToWrite);
+                
             }
             
-            Console.WriteLine("Received Hash: " + _endPacket.FileMD5);
+            Console.WriteLine("Received Hash: " + _endPacket.FileMd5);
             Console.WriteLine("Computed Hash: " + hash);
             Console.WriteLine("Received packages: " + _dataPackets.Count);
-            return false;
+            return result;
         }
 
         public void WriteTransmission(string dirToWrite)
         {
             _dataPackets = _dataPackets.OrderBy(d => d.Sequence).ToList();
-            string data = _dataPackets.Aggregate("", (current, packet) => current + packet.Data);
+            List<byte> bytes =  new List<byte>();
+            byte[] data = _dataPackets.Aggregate(bytes, (list, packet) =>
+            {
+                list.AddRange(packet.Data);
+                return list;
+            }).ToArray();
+
+            data = TrimEnd(data);
 
             string path = dirToWrite + Path.DirectorySeparatorChar +_initialPacket.FileName;
-            File.WriteAllText(path,data);
+            File.WriteAllBytes(path,data.Reverse().ToArray());
             Console.WriteLine("File saved!");
         }
-
-        public string GetTransmissionContent()
+        
+        private static byte[] TrimEnd(byte[] array)
         {
-            if (!IsEnd)
-            {
-                throw new Exception("Transmission has not ended yet.");
-            }
-            _dataPackets = _dataPackets.OrderBy(d => d.Sequence).ToList();
-            string data = _dataPackets.Aggregate("", (current, packet) => current + packet.Data);
-            return data;
+            int lastIndex = Array.FindLastIndex(array, b => b != 0);
+
+            Array.Resize(ref array, lastIndex + 1);
+
+            return array;
         }
+        
+        
     }
 }

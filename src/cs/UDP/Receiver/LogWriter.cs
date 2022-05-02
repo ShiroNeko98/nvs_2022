@@ -37,10 +37,8 @@ public class LogWriter
     {
         try
         {
-            txtWriter.Write("\r\nLog Entry : ");
-            txtWriter.WriteLine("{0} {1}", DateTime.Now.ToLongTimeString(), DateTime.Now.ToLongDateString());
-            txtWriter.WriteLine("  :");
-            txtWriter.WriteLine("  :{0}", logMessage);
+            txtWriter.WriteLine("Log Entry von Cpt. Piccard, Sternenzeit: "  + DateTime.Now );
+            txtWriter.WriteLine("{0}", logMessage);
             txtWriter.WriteLine("-------------------------------");
         }
         catch (Exception e)

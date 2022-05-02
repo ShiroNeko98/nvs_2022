@@ -19,12 +19,16 @@ namespace Transmitter
     public class DataPacket
     {
         public string Sequence { get; set; }
-        public string Data { get; set; }
+        public byte[] Data { get; set; }
 
         public byte[] GetBytes()
         {
+            //this is dumb! 
+            // like Arrays.toString() in java i guess ?? 
+            string sb = "[" + string.Join(",", Data) + "]";
+            
             string packetString = Sequence + "\u0000" 
-                                           + Data + "\u0000";
+                                           + sb + "\u0000";
             return Encoding.ASCII.GetBytes(packetString);
         }
     }

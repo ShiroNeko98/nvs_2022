@@ -4,6 +4,7 @@
     {
         public string DirPath { get; set; }
         public string Port { get; set; }
+        
         private const string HelpText  = "Program Args:\r\n-dir [path]\r\n-port [port]\r\n(optional) -h Help Text";
 
         public ProgramArguments(string[] args)
@@ -17,7 +18,7 @@
             try
             {
                 DirPath = args[1];
-                Port = args[2];
+                Port = args[3];
             }
             catch (Exception)
             {

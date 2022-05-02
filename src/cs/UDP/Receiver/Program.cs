@@ -8,22 +8,15 @@
             ProgramArguments arguments = new ProgramArguments(args);
             UdpService service = new UdpService(Int32.Parse(arguments.Port));
             Transmission transmission = service.ReceiveTransmission();
-            if (transmission.CheckTransmission())
+            if (!transmission.CheckTransmission(arguments.DirPath))
             {
-                Console.WriteLine("\r\n\r\nReceived File:\r\n\r\n");
-                Console.Write(transmission.GetTransmissionContent());
-                transmission.WriteTransmission(arguments.DirPath);
-            }
-            else
-            {
-                Console.Write("Content received: " + transmission.GetTransmissionContent());
                 Console.WriteLine("\r\nTransmission failed check!");
             }
-
-            LogWriter.LogWrite("Transmission on Port: " + arguments.Port + " from " + IPAdresse +
-                               "\r\nReceived: " + Transmission._dataPackets.Count + " packages out of " + Transmission._initialPacket.FileSize +
-                               "\r\nPackets lost: " + Transmission._initialPacket.FileSize - Transmission._dataPackets.Count +
-                               "\r\nReceiving took: " + Dauer + 
+            
+            LogWriter.LogWrite("Transmission on Port: " + arguments.Port + " from " + service.ip +
+                               "\r\nReceived: " + transmission._dataPackets.Count + " packages out of " + transmission._initialPacket.FileSize +
+                               "\r\nPackets lost: " + (transmission._initialPacket.FileSize - transmission._dataPackets.Count) +
+                               "\r\nReceiving took: " + transmission.timeElapsed + 
                                "\r\n");
             Console.WriteLine("\r\nLog created!");
             Environment.Exit(0);

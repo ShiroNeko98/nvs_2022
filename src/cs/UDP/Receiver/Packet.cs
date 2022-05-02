@@ -44,13 +44,14 @@
             Parse(s);
         }
         
-        public string Data { get; set; }
+        public byte[] Data { get; set; }
         
         public void Parse(string s)
         {
             string[] parts = s.Split("\u0000");
             Sequence = int.Parse(parts[0]);
-            Data = parts[1];
+            List<byte> bytes = new List<byte>();
+            Data = Array.ConvertAll(parts[1].Replace("[", "").Replace("]", "").Split(","), s => (byte) int.Parse(s));
         }
     }
     
@@ -62,13 +63,13 @@
             Parse(s);
         }
         
-        public string FileMD5 { get; set; }
+        public string FileMd5 { get; set; }
         
         public void Parse(string s)
         {
             string[] parts = s.Split("\u0000");
             Sequence = int.Parse(parts[0]);
-            FileMD5 = parts[1];
+            FileMd5 = parts[1];
         }
     }
 }

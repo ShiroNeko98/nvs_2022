@@ -6,10 +6,11 @@ namespace Transmitter
     public class TransmissionService
     {
         private InitPacket _initPacket;
-        private IList<DataPacket> _dataPackets;
+        public IList<DataPacket> _dataPackets;
         private EndPacket _endPacket;
-
-        public TransmissionService(string message,string filename)
+        public TimeSpan elapsedTime;
+        
+        public TransmissionService(byte[] message,string filename)
         {
             _dataPackets = new List<DataPacket>();
             Parse(message,filename);
@@ -19,6 +20,7 @@ namespace Transmitter
         {
             Console.WriteLine("Start transmitting File ...");
             UdpClient udpClient = new UdpClient();
+            DateTime startTime = DateTime.Now;
             try
             {
                 udpClient.Connect(ip,port);
@@ -36,7 +38,8 @@ namespace Transmitter
                     byte[] dataPacketBytes = packet.GetBytes();
                     progress.Report((double)int.Parse(packet.Sequence)/_initPacket.TotalPacketNumber);
                     udpClient.Send(dataPacketBytes, dataPacketBytes.Length);
-                    Thread.Sleep(1000);
+                    
+                    Thread.Sleep(1);
                 }
                 progress.Dispose();
                 byte[] endPacketBytes = _endPacket.GetBytes();
@@ -46,6 +49,7 @@ namespace Transmitter
                 }
                 
                 Console.WriteLine("\r\nFinished Transmitting File!");
+                elapsedTime = DateTime.Now - startTime;
                 udpClient.Close();
             }
             catch (Exception e)
@@ -54,21 +58,21 @@ namespace Transmitter
             }
         }
 
-        private void Parse(string message,string filename)
+        private void Parse(byte[] message,string filename)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(message))
+                if (message.Length == 0)
                 {
-                    throw new Exception("Unable to create Packets, message was null or whitespace");
+                    throw new Exception("Unable to create Packets, message was empty.");
                 }
                 
                 string messageMd5 = EncryptionHelper.ComputeMD5(message);
                 int sequence = 1;
 
-                IList<string> dataChunks = GetChunks(message,1024).ToList();
+                IList<byte[]> dataChunks = GetChunks(message,1024).ToList();
 
-                foreach (string chunk in dataChunks)
+                foreach (byte[] chunk in dataChunks)
                 {
                     DataPacket dataPacket = new DataPacket()
                     {
@@ -92,7 +96,7 @@ namespace Transmitter
                     Sequence = "-1"
                 };
                 
-                Console.WriteLine("Packets Created:\r\n Total Number: " + (sequence -1 ) +"\r\n");
+                Console.WriteLine("Packets Created!\t Total Number: " + (sequence -1 ) +"\r\n");
             }
             catch (Exception e)
             {
@@ -100,9 +104,28 @@ namespace Transmitter
             }
         }
         
-        static IEnumerable<string> GetChunks(string str, int maxChunkSize) {
-            for (int i = 0; i < str.Length; i += maxChunkSize) 
-                yield return str.Substring(i, Math.Min(maxChunkSize, str.Length-i));
+        static IEnumerable<byte[]> GetChunks(byte[] message, int maxChunkSize)
+        {
+
+            Stack<byte> stack = new Stack<byte>(message);
+            
+            while (stack.Count > 0)
+            {
+                byte[] bytes = new byte[maxChunkSize];
+                for (int i = 0; i < maxChunkSize; i++)
+                {
+                    if ( stack.TryPop(out byte b))
+                    {
+                        bytes[i] = b;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+
+                yield return bytes.ToArray();
+            }
         }
     }
 }
