@@ -3,9 +3,14 @@
 #usage  python receiver.py file/path
 
 import hashlib
+import codecs
 import datetime
+import struct
 import time
 from socket import *
+
+
+
 
 host="0.0.0.0"
 port = 11000
@@ -14,7 +19,7 @@ s.bind((host,port))
 nummer = 0
 
 addr = (host,port)
-buf=2000
+buf=4000
 
 data,addr = s.recvfrom(buf)
 while(data[0] == 48):
@@ -32,17 +37,53 @@ f = open(temp_data[2],'wb')
 data = data.split(b'\x00')
 #-----------First package------------------
 
-f.write(data[1])
+temp_ir = list(data[1].removeprefix(b'[').removesuffix(b']').split(b','))
+#print(temp_ir)
+#temp_ir = temp_ir[:-1]
+#while temp_ir[-1] == b'0':
+    #temp_ir.pop()
+#print(temp_ir)
+#print(temp_ir)
+#for i in reversed(temp_ir):
+    #k = i.decode("utf-8").removeprefix('[').removesuffix(']')
+    #print(k)
+    #f.write(chr(int(k)).encode('utf-8'))
+    #f.write(chr(int(i.deleteprefix('['))))
 nummer+=1
+
 try:
     while (data):
-        s.settimeout(1)
+        s.settimeout(2)
         data, addr = s.recvfrom(buf)
         data = data.split(b'\x00')
         if(data[0] != b'-1'):
             nummer+=1
-            f.write(data[1])
+            temp_ir.extend(data[1].removeprefix(b'[').removesuffix(b']').split(b','))
+            #temp_ir = temp_ir[:-1]
+            #while temp_ir[-1] == b'0':
+                #temp_ir.pop()
+            ##for i in reversed(temp_ir):
+                ##k = i.decode("utf-8").removeprefix('[').removesuffix(']')
+                # print(k)
+                ##f.write(chr(int(k)).encode('utf-8'))
 except timeout:
+    #packet_bytes = temp_ir[0]
+    byte_arr = []
+    some_bytes = bytearray(byte_arr)
+    while temp_ir[-1] == b'0':
+        temp_ir.pop()
+    for i in reversed(temp_ir):
+        k = int(i.decode("utf-8"))
+        some_bytes.append(k)
+        #print(k)
+    #f.write(temp_ir)
+    f.write(some_bytes)
+    ##for byte in reversed(temp_ir):
+        #print(byte)
+        #f.write(byte)
+    #end_data = bytes(temp_ir)
+    #print(temp_ir)
+    #f.write(end_data)
     f.close()
     s.close()
     toc = time.perf_counter()
