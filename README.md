@@ -4,7 +4,7 @@ Check whether Java is installed on the machine with: `java -version`
 2. `javac Transmitter.java`
 3. `java Transmitter localhost test.txt`
 
-`java Transmitter <ip address> <path of file> { optional }`
+`java Transmitter <ip address> <path of file> [ optional ]`
 
 Optional:
 -h: print help page  

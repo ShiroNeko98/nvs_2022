@@ -16,7 +16,7 @@ import java.util.logging.SimpleFormatter;
 public class Transmitter {
     private static final Logger LOG = Logger.getLogger("JavaTransmitterLog");
 
-    private static int SLEEP = 1000;
+    private static int SLEEP = 1;
     private static int DATA_SIZE = 1024;
     private static int PORT = 11000;
 
@@ -64,12 +64,13 @@ public class Transmitter {
     }
 
     private static void printHelpText() {
-        System.out.print("The program must be executed like: java Transmitter <ip address> <path of file> [optional]\n\n" +
-                         "Optional:\n" +
-                         "-h ... print help page\n" +
-                         "-s <integer> ... set size of data\n" +
-                         "-p <integer> ... set port\n" +
-                         "-sl <integer> ... sleep timer");
+        System.out.print(
+                "The program must be executed like: java Transmitter <ip address> <path of file> [optional]\n\n" +
+                "Optional:\n" +
+                "-h ... print help page\n" +
+                "-s <integer> ... set size of data\n" +
+                "-p <integer> ... set port\n" +
+                "-sl <integer> ... sleep timer");
     }
 
     private static void setOptionalParameters(String[] args) {
@@ -100,7 +101,7 @@ public class Transmitter {
             String initialData = "0" + NULL_TERMINATED +
                                  (file.length() / DATA_SIZE) + NULL_TERMINATED +
                                  file.getName();
-            sendAndWait(initialData.getBytes());
+            sendAndWait(initialData);
         }
 
         // send file content
@@ -113,12 +114,12 @@ public class Transmitter {
 
         for (int i = 0; i < 3; i++) {
             String endData = "-1" + NULL_TERMINATED + hash;
-            sendAndWait(endData.getBytes());
+            sendAndWait(endData);
         }
     }
 
-    private void sendAndWait(byte[] buffer) throws IOException, InterruptedException {
-        //byte[] buffer = data.getBytes();
+    private void sendAndWait(String data) throws IOException, InterruptedException {
+        byte[] buffer = data.getBytes(StandardCharsets.US_ASCII);
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
         datagramSocket.send(datagramPacket);
 
@@ -139,29 +140,39 @@ public class Transmitter {
         int copyStartIndex = 0;
         byte[] bytesOfFile = new byte[(int) file.length()];
 
+        // read from file
         FileInputStream fileInputStream = new FileInputStream(file);
         while (byteRead != file.length()) {
-            byte[] bFile = new byte[DATA_SIZE];
-            byteRead += fileInputStream.read(bFile);
+            byteRead += fileInputStream.read(bytesOfFile);
+        }
+        fileInputStream.close();
 
-            // collect read bytes for md5 hash at the end of transmission
-            for (int i = 0; i < bFile.length; i++) {
-                if (bFile[i] == 0) {
-                    // EOF reached => no need for further copy
+        // send junks of data to receiver
+        while (copyStartIndex < bytesOfFile.length) {
+            String packetData = String.valueOf(sequenceNumber);
+            packetData += NULL_TERMINATED;
+            packetData += "[";
+
+            for (int j = 0; j < DATA_SIZE; j++) {
+                packetData += String.valueOf(bytesOfFile[copyStartIndex + j]);
+
+                if (copyStartIndex + j + 1 == bytesOfFile.length) {
                     break;
                 }
 
-                bytesOfFile[copyStartIndex + i] = bFile[i];
+                if (j < DATA_SIZE - 1) {
+                    packetData += ",";
+                }
             }
-            copyStartIndex = byteRead;
 
-            String dataStr = sequenceNumber + NULL_TERMINATED + new String(bFile, StandardCharsets.UTF_8);
-            sendAndWait(dataStr.getBytes());
+            packetData += "]";
+
+            copyStartIndex += DATA_SIZE;
             sequenceNumber++;
+            sendAndWait(packetData);
         }
-
-        fileInputStream.close();
 
         return bytesOfFile;
     }
+
 }
