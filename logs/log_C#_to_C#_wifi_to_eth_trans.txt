@@ -1,0 +1,43 @@
+File Created:8:25:30 
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 20:25:30
+Transmission on Port: 11000 to 10.0.0.189
+Sent: 6
+Receiving took: 00:00:00.1137326
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 20:25:57
+Transmission on Port: 11000 to 10.0.0.189
+Sent: 68
+Receiving took: 00:00:01.0530684
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 20:26:24
+Transmission on Port: 11000 to 10.0.0.189
+Sent: 1063
+Receiving took: 00:00:16.4327607
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 20:27:11
+Transmission on Port: 11000 to 10.0.0.189
+Sent: 562
+Receiving took: 00:00:08.6989123
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 20:27:37
+Transmission on Port: 11000 to 10.0.0.189
+Sent: 1063
+Receiving took: 00:00:16.4303688
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 20:28:13
+Transmission on Port: 11000 to 10.0.0.189
+Sent: 1063
+Receiving took: 00:00:16.4387494
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 20:28:42
+Transmission on Port: 11000 to 10.0.0.189
+Sent: 1063
+Receiving took: 00:00:16.4199551
+
+-------------------------------

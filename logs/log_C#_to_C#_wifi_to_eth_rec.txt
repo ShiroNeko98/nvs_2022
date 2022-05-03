@@ -1,0 +1,49 @@
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 21:26:59
+Transmission on Port: 11000 from 10.0.0.19
+Received: 6 packages out of 6
+Packets lost: 0
+Receiving took: 00:00:00.0849139
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 21:27:25
+Transmission on Port: 11000 from 10.0.0.19
+Received: 68 packages out of 68
+Packets lost: 0
+Receiving took: 00:00:01.0420089
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 21:27:52
+Transmission on Port: 11000 from 10.0.0.19
+Received: 1059 packages out of 1063
+Packets lost: 4
+Receiving took: 00:00:16.4212062
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 21:28:40
+Transmission on Port: 11000 from 10.0.0.19
+Received: 562 packages out of 562
+Packets lost: 0
+Receiving took: 00:00:08.6902199
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 21:29:05
+Transmission on Port: 11000 from 10.0.0.19
+Received: 1059 packages out of 1063
+Packets lost: 4
+Receiving took: 00:00:16.4207282
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 21:29:42
+Transmission on Port: 11000 from 10.0.0.19
+Received: 1058 packages out of 1063
+Packets lost: 5
+Receiving took: 00:00:16.4289809
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 21:30:11
+Transmission on Port: 11000 from 10.0.0.19
+Received: 1057 packages out of 1063
+Packets lost: 6
+Receiving took: 00:00:16.4103679
+
+-------------------------------

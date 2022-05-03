@@ -1,0 +1,24 @@
+Transmission ip: 0.0.0.0
+Transmission port: 11000
+Packets received 6/6
+Localtime: 2022-05-03 21:48:13.684996
+Time needed for transmission: 2.0934788999993543
+--------------------------------------------
+Transmission ip: 0.0.0.0
+Transmission port: 11000
+Packets received 68/68
+Localtime: 2022-05-03 21:48:28.733838
+Time needed for transmission: 3.054383300000154
+--------------------------------------------
+Transmission ip: 0.0.0.0
+Transmission port: 11000
+Packets received 562/562
+Localtime: 2022-05-03 21:48:49.806958
+Time needed for transmission: 10.700199399999292
+--------------------------------------------
+Transmission ip: 0.0.0.0
+Transmission port: 11000
+Packets received 1063/1063
+Localtime: 2022-05-03 21:49:18.181077
+Time needed for transmission: 18.45336309999948
+--------------------------------------------

@@ -1,0 +1,24 @@
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 21:00:51
+Transmission on Port: 11000 to 10.0.0.19
+Sent: 6
+Receiving took: 00:00:00.1095607
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 21:02:08
+Transmission on Port: 11000 to 10.0.0.19
+Sent: 68
+Receiving took: 00:00:01.0236458
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 21:02:51
+Transmission on Port: 11000 to 10.0.0.19
+Sent: 1063
+Receiving took: 00:00:15.9987302
+
+-------------------------------
+Log Entry von Cpt. Piccard, Sternenzeit: 03/05/2022 21:03:34
+Transmission on Port: 11000 to 10.0.0.19
+Sent: 562
+Receiving took: 00:00:08.4680049
+
+-------------------------------
