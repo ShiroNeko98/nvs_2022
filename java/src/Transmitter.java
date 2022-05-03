@@ -1,3 +1,6 @@
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -6,8 +9,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -119,7 +124,7 @@ public class Transmitter {
     }
 
     private void sendAndWait(String data) throws IOException, InterruptedException {
-        byte[] buffer = data.getBytes(StandardCharsets.US_ASCII);
+        byte[] buffer = data.getBytes();
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
         datagramSocket.send(datagramPacket);
 
@@ -136,16 +141,25 @@ public class Transmitter {
      */
     private byte[] sendFileContent(File file) throws IOException, InterruptedException {
         int sequenceNumber = 1;
-        int byteRead = 0;
         int copyStartIndex = 0;
         byte[] bytesOfFile = new byte[(int) file.length()];
 
         // read from file
         FileInputStream fileInputStream = new FileInputStream(file);
-        while (byteRead != file.length()) {
-            byteRead += fileInputStream.read(bytesOfFile);
-        }
+        fileInputStream.read(bytesOfFile);
         fileInputStream.close();
+
+        /*ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        BufferedImage img = ImageIO.read(file);
+        ImageIO.write(img, "jpg", baos);
+        baos.flush();
+
+        String base64String = Base64.getEncoder().encode(baos.toByteArray());
+        baos.close();
+
+        byte[] bytearray = Base64.decode(base64String);*/
+
+        //byte[] bytesOfFile = Files.readAllBytes(file.toPath());
 
         // send junks of data to receiver
         while (copyStartIndex < bytesOfFile.length) {
