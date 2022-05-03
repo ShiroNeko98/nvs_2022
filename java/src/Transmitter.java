@@ -5,7 +5,7 @@ import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.FileHandler;
@@ -101,7 +101,7 @@ public class Transmitter {
             String initialData = "0" + NULL_TERMINATED +
                                  (file.length() / DATA_SIZE) + NULL_TERMINATED +
                                  file.getName();
-            sendAndWait(initialData.getBytes());
+            sendAndWait(initialData);
         }
 
         // send file content
@@ -114,12 +114,12 @@ public class Transmitter {
 
         for (int i = 0; i < 3; i++) {
             String endData = "-1" + NULL_TERMINATED + hash;
-            sendAndWait(endData.getBytes());
+            sendAndWait(endData);
         }
     }
 
-    private void sendAndWait(byte[] buffer) throws IOException, InterruptedException {
-        //byte[] buffer = data.getBytes();
+    private void sendAndWait(String data) throws IOException, InterruptedException {
+        byte[] buffer = data.getBytes(StandardCharsets.US_ASCII);
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
         datagramSocket.send(datagramPacket);
 
@@ -140,56 +140,39 @@ public class Transmitter {
         int copyStartIndex = 0;
         byte[] bytesOfFile = new byte[(int) file.length()];
 
+        // read from file
         FileInputStream fileInputStream = new FileInputStream(file);
         while (byteRead != file.length()) {
             byteRead += fileInputStream.read(bytesOfFile);
         }
-
-        /*List<Byte> bFile = new ArrayList<>();
-        for (int i = 0; i < bytesOfFile.length; i++) {
-
-            /*String dataStr = sequenceNumber + NULL_TERMINATED;
-            for (byte b : dataStr.getBytes()) {
-                bFile.add(b);
-            }
-
-            bFile[i] = bytesOfFile[i];
-
-            byte[] packet = new byte[DATA_SIZE];
-            for (int j = 0; j < packet.length; j++) {
-                packet[j] = b
-            }
-            sendAndWait(bFile);
-            sequenceNumber++;
-        }*/
-
-        byte[] bFile = new byte[]{49, 0, 104, 97, 108, 108, 111};
-
-        String packetData = "[49,0,104,97,108,108,111]";
-        sendAndWait(packetData.getBytes(Charset.forName("ASCII")));
-
         fileInputStream.close();
 
-       /* BufferedInputStream bis = new BufferedInputStream(new FileInputStream("java/src/hallo.txt"));
-        int length=bis.available();
-        //DatagramSocket ds = new DatagramSocket();
-        byte[] buf = new byte[length];
-        bis.read(buf);
-        DatagramPacket dp = new DatagramPacket(buf,buf.length, InetAddress.getByName("127.0.0.1"),PORT);
-        datagramSocket.send(dp);
-        datagramSocket.close();
-        bis.close();*/
+        // send junks of data to receiver
+        while (copyStartIndex < bytesOfFile.length) {
+            String packetData = String.valueOf(sequenceNumber);
+            packetData += NULL_TERMINATED;
+            packetData += "[";
+
+            for (int j = 0; j < DATA_SIZE; j++) {
+                packetData += String.valueOf(bytesOfFile[copyStartIndex + j]);
+
+                if (copyStartIndex + j + 1 == bytesOfFile.length) {
+                    break;
+                }
+
+                if (j < DATA_SIZE - 1) {
+                    packetData += ",";
+                }
+            }
+
+            packetData += "]";
+
+            copyStartIndex += DATA_SIZE;
+            sequenceNumber++;
+            sendAndWait(packetData);
+        }
 
         return bytesOfFile;
     }
 
-    public static byte[] hexStringToByteArray(String s) {
-        int len = s.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                                  + Character.digit(s.charAt(i + 1), 16));
-        }
-        return data;
-    }
 }
