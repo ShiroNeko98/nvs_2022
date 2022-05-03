@@ -31,7 +31,7 @@ public class Transmitter {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException, NoSuchAlgorithmException {
-        configureLogger();
+        //configureLogger();
 
         if (args.length < 2) {
             if (args[0].equals("-h")) {
@@ -55,7 +55,7 @@ public class Transmitter {
     }
 
     private static void configureLogger() throws IOException {
-        FileHandler fh = new FileHandler("logs/java/Transmitter.log");
+        FileHandler fh = new FileHandler("../../logs/java/Transmitter.log");
 
         SimpleFormatter formatter = new SimpleFormatter();
         fh.setFormatter(formatter);
