@@ -64,7 +64,7 @@ public class Transmitter {
     }
 
     private static void printHelpText() {
-        System.out.print("The program must be executed like: java Transmitter <path of file> <port> [optional]\n\n" +
+        System.out.print("The program must be executed like: java Transmitter <ip address> <path of file> [optional]\n\n" +
                          "Optional:\n" +
                          "-h ... print help page\n" +
                          "-s <integer> ... set size of data\n" +
