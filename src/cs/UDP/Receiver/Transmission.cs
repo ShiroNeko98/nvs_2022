@@ -93,15 +93,13 @@ namespace Receiver
 
             data = TrimEnd(data);
             
-            string hash = EncryptionHelper.ComputeMD5(data.Reverse().ToArray());
+            string hash = EncryptionHelper.ComputeMD5(data.ToArray());
             
             bool result = _endPacket.FileMd5.Equals(hash, StringComparison.InvariantCultureIgnoreCase);
-           
-            
+
             if (result)
             {
                 WriteTransmission(dirToWrite);
-                
             }
             
             Console.WriteLine("Received Hash: " + _endPacket.FileMd5);
@@ -123,16 +121,14 @@ namespace Receiver
             data = TrimEnd(data);
 
             string path = dirToWrite + Path.DirectorySeparatorChar +_initialPacket.FileName;
-            File.WriteAllBytes(path,data.Reverse().ToArray());
+            File.WriteAllBytes(path,data.ToArray());
             Console.WriteLine("File saved!");
         }
         
         private static byte[] TrimEnd(byte[] array)
         {
             int lastIndex = Array.FindLastIndex(array, b => b != 0);
-
             Array.Resize(ref array, lastIndex + 1);
-
             return array;
         }
     }

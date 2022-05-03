@@ -71,7 +71,6 @@ namespace Transmitter
                 int sequence = 1;
 
                 IList<byte[]> dataChunks = GetChunks(message,1024).ToList();
-
                 foreach (byte[] chunk in dataChunks)
                 {
                     DataPacket dataPacket = new DataPacket()
@@ -106,15 +105,14 @@ namespace Transmitter
         
         static IEnumerable<byte[]> GetChunks(byte[] message, int maxChunkSize)
         {
-
-            Stack<byte> stack = new Stack<byte>(message);
+            Stack<byte> stack = new Stack<byte>(message.Reverse());
             
             while (stack.Count > 0)
             {
                 byte[] bytes = new byte[maxChunkSize];
                 for (int i = 0; i < maxChunkSize; i++)
                 {
-                    if ( stack.TryPop(out byte b))
+                    if (stack.TryPop(out byte b))
                     {
                         bytes[i] = b;
                     }

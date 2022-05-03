@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Text;
-
 namespace Receiver;
 
 public class LogWriter
@@ -28,7 +27,7 @@ public class LogWriter
                 Log(logMessage, w);
             }
         }
-        catch (Exception e)
+        catch (Exception)
         {
         }
     }
@@ -41,7 +40,7 @@ public class LogWriter
             txtWriter.WriteLine("{0}", logMessage);
             txtWriter.WriteLine("-------------------------------");
         }
-        catch (Exception e)
+        catch (Exception)
         {
         }
     }

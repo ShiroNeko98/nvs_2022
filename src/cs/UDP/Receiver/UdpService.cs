@@ -6,7 +6,6 @@ namespace Receiver
     public class UdpService
     {
         private readonly int _port;
-
         public string ip;
         
         public UdpService(int port)
@@ -25,9 +24,7 @@ namespace Receiver
             while (!transmission.IsEnd)
             {
                 byte[] receiveBytes  = udpClient.Receive(ref remoteIpEndPoint);
-                
                 string receiveData = Encoding.ASCII.GetString(receiveBytes);
-                
                 transmission.AddPacket(receiveData);
             }
 
