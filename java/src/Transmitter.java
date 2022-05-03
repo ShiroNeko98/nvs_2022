@@ -8,10 +8,16 @@ import java.net.InetAddress;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class Transmitter {
+    private static final Logger LOG = Logger.getLogger("JavaTransmitterLog");
+
     private static int SLEEP = 1000;
-    private static int DATA_SIZE = 1472;
+    private static int DATA_SIZE = 1024;
     private static int PORT = 11000;
 
     private final DatagramSocket datagramSocket;
@@ -25,25 +31,36 @@ public class Transmitter {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException, NoSuchAlgorithmException {
+        configureLogger();
+
         if (args.length < 2) {
             if (args[0].equals("-h")) {
                 printHelpText();
                 System.exit(0);
             }
 
-            System.out.println("Not enough or too many arguments");
+            LOG.log(Level.SEVERE, "Not enough or too many arguments");
             System.exit(1);
         }
 
         setOptionalParameters(args);
 
         // start transmitter
-        System.out.println("Starting transmission ...");
+        LOG.info("Starting transmission ...");
 
         Transmitter transmitter = new Transmitter(new DatagramSocket(), InetAddress.getByName(args[0]));
         transmitter.sendData(args[1]);
 
-        System.out.println("File transmitted. Closing program ...");
+        LOG.info("File transmitted. Closing program ...");
+    }
+
+    private static void configureLogger() throws IOException {
+        FileHandler fh = new FileHandler("logs/java/Transmitter.log");
+
+        SimpleFormatter formatter = new SimpleFormatter();
+        fh.setFormatter(formatter);
+
+        LOG.addHandler(fh);
     }
 
     private static void printHelpText() {
@@ -69,7 +86,7 @@ public class Transmitter {
                 i++;
                 SLEEP = Integer.parseInt(args[i]);
             } else {
-                System.out.println("ERROR: not supported parameter " + param + " found");
+                LOG.log(Level.SEVERE, "ERROR: not supported parameter " + param + " found");
                 System.exit(1);
             }
         }
@@ -83,7 +100,7 @@ public class Transmitter {
             String initialData = "0" + NULL_TERMINATED +
                                  (file.length() / DATA_SIZE) + NULL_TERMINATED +
                                  file.getName();
-            sendAndWait(initialData);
+            sendAndWait(initialData.getBytes());
         }
 
         // send file content
@@ -96,12 +113,12 @@ public class Transmitter {
 
         for (int i = 0; i < 3; i++) {
             String endData = "-1" + NULL_TERMINATED + hash;
-            sendAndWait(endData);
+            sendAndWait(endData.getBytes());
         }
     }
 
-    private void sendAndWait(String data) throws IOException, InterruptedException {
-        byte[] buffer = data.getBytes();
+    private void sendAndWait(byte[] buffer) throws IOException, InterruptedException {
+        //byte[] buffer = data.getBytes();
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
         datagramSocket.send(datagramPacket);
 
@@ -138,7 +155,8 @@ public class Transmitter {
             }
             copyStartIndex = byteRead;
 
-            sendAndWait(sequenceNumber + NULL_TERMINATED + new String(bFile, StandardCharsets.US_ASCII));
+            String dataStr = sequenceNumber + NULL_TERMINATED + new String(bFile, StandardCharsets.UTF_8);
+            sendAndWait(dataStr.getBytes());
             sequenceNumber++;
         }
 

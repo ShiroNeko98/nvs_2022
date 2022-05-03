@@ -1,8 +1,10 @@
 ### java Transmitter
-1. javac Transmitter.java
-2. java Transmitter test.txt localhost
+Check whether Java is installed on the machine with: `java -version`
+1. Navigate to `nvs_2022/java/src/` directory
+2. `javac Transmitter.java`
+3. `java Transmitter localhost test.txt`
 
-java Transmitter <ip address> <path of file> { optional }
+`java Transmitter <ip address> <path of file> { optional }`
 
 Optional:
 -h: print help page  
@@ -12,11 +14,10 @@ Optional:
 
 
 ### cs Receiver
-Receiver.exe -dir <path>  
-default port 11000  
+`Receiver.exe -dir <path> -port <port>`  
 optional: -h for help text
 
 ### cs Transmitter
-Transmitter.exe -ip <remote ip address> -port <remote port> -file <file path>  
+Transmitter.exe -ip [remote ip address] -port [remote port] -file [file path]  
 optional: -h for help text
 
