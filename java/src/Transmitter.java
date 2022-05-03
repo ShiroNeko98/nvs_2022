@@ -1,13 +1,14 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,12 +65,13 @@ public class Transmitter {
     }
 
     private static void printHelpText() {
-        System.out.print("The program must be executed like: java Transmitter <ip address> <path of file> [optional]\n\n" +
-                         "Optional:\n" +
-                         "-h ... print help page\n" +
-                         "-s <integer> ... set size of data\n" +
-                         "-p <integer> ... set port\n" +
-                         "-sl <integer> ... sleep timer");
+        System.out.print(
+                "The program must be executed like: java Transmitter <ip address> <path of file> [optional]\n\n" +
+                "Optional:\n" +
+                "-h ... print help page\n" +
+                "-s <integer> ... set size of data\n" +
+                "-p <integer> ... set port\n" +
+                "-sl <integer> ... sleep timer");
     }
 
     private static void setOptionalParameters(String[] args) {
@@ -141,27 +143,54 @@ public class Transmitter {
 
         FileInputStream fileInputStream = new FileInputStream(file);
         while (byteRead != file.length()) {
-            byte[] bFile = new byte[DATA_SIZE];
-            byteRead += fileInputStream.read(bFile);
-
-            // collect read bytes for md5 hash at the end of transmission
-            for (int i = 0; i < bFile.length; i++) {
-                if (bFile[i] == 0) {
-                    // EOF reached => no need for further copy
-                    break;
-                }
-
-                bytesOfFile[copyStartIndex + i] = bFile[i];
-            }
-            copyStartIndex = byteRead;
-
-            String dataStr = sequenceNumber + NULL_TERMINATED + new String(bFile, StandardCharsets.UTF_8);
-            sendAndWait(dataStr.getBytes());
-            sequenceNumber++;
+            byteRead += fileInputStream.read(bytesOfFile);
         }
+
+        /*List<Byte> bFile = new ArrayList<>();
+        for (int i = 0; i < bytesOfFile.length; i++) {
+
+            /*String dataStr = sequenceNumber + NULL_TERMINATED;
+            for (byte b : dataStr.getBytes()) {
+                bFile.add(b);
+            }
+
+            bFile[i] = bytesOfFile[i];
+
+            byte[] packet = new byte[DATA_SIZE];
+            for (int j = 0; j < packet.length; j++) {
+                packet[j] = b
+            }
+            sendAndWait(bFile);
+            sequenceNumber++;
+        }*/
+
+        byte[] bFile = new byte[]{49, 0, 104, 97, 108, 108, 111};
+
+        String text = 1 + NULL_TERMINATED + "hallo";
+        sendAndWait(text.getBytes(Charset.forName("ASCII")));
 
         fileInputStream.close();
 
+       /* BufferedInputStream bis = new BufferedInputStream(new FileInputStream("java/src/hallo.txt"));
+        int length=bis.available();
+        //DatagramSocket ds = new DatagramSocket();
+        byte[] buf = new byte[length];
+        bis.read(buf);
+        DatagramPacket dp = new DatagramPacket(buf,buf.length, InetAddress.getByName("127.0.0.1"),PORT);
+        datagramSocket.send(dp);
+        datagramSocket.close();
+        bis.close();*/
+
         return bytesOfFile;
+    }
+
+    public static byte[] hexStringToByteArray(String s) {
+        int len = s.length();
+        byte[] data = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) {
+            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                                  + Character.digit(s.charAt(i+1), 16));
+        }
+        return data;
     }
 }
