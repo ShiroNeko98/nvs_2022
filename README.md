@@ -21,3 +21,6 @@ optional: -h for help text
 Transmitter.exe -ip [remote ip address] -port [remote port] -file [file path]  
 optional: -h for help text
 
+##Python receiver
+python receiver.py port
+

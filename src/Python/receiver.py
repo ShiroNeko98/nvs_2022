@@ -3,11 +3,12 @@
 import hashlib
 import datetime
 import time
+import sys
 from socket import *
 
 #socket settings
-host="0.0.0.0"
-port = 11000
+host='0.0.0.0'
+port = int(sys.argv[1])
 s = socket(AF_INET,SOCK_DGRAM)
 s.bind((host,port))
 addr = (host,port)
