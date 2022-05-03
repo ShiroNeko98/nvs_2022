@@ -1,14 +1,13 @@
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,7 +16,7 @@ import java.util.logging.SimpleFormatter;
 public class Transmitter {
     private static final Logger LOG = Logger.getLogger("JavaTransmitterLog");
 
-    private static int SLEEP = 1000;
+    private static int SLEEP = 1;
     private static int DATA_SIZE = 1024;
     private static int PORT = 11000;
 
@@ -166,8 +165,8 @@ public class Transmitter {
 
         byte[] bFile = new byte[]{49, 0, 104, 97, 108, 108, 111};
 
-        String text = 1 + NULL_TERMINATED + "hallo";
-        sendAndWait(text.getBytes(Charset.forName("ASCII")));
+        String packetData = "[49,0,104,97,108,108,111]";
+        sendAndWait(packetData.getBytes(Charset.forName("ASCII")));
 
         fileInputStream.close();
 
@@ -189,7 +188,7 @@ public class Transmitter {
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
             data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                                  + Character.digit(s.charAt(i+1), 16));
+                                  + Character.digit(s.charAt(i + 1), 16));
         }
         return data;
     }
