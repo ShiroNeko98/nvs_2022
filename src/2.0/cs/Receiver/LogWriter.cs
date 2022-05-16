@@ -37,7 +37,7 @@ public class LogWriter
     {
         try
         {
-            txtWriter.WriteLine("Logbucheintrag von Cpt. Piccard, Sternenzeit: "  + DateTime.Now );
+            txtWriter.WriteLine("Log Entry von Cpt. Piccard, Sternenzeit: "  + DateTime.Now );
             txtWriter.WriteLine("{0}", logMessage);
             txtWriter.WriteLine("-------------------------------");
         }

@@ -1,4 +1,5 @@
-﻿using Receiver;
+﻿using System.Net.Sockets;
+using Receiver;
 
 namespace Transmitter
 {
@@ -8,14 +9,12 @@ namespace Transmitter
         {
             Console.WriteLine("-=[UDP TRANSMITTER]=-");
             ProgramArguments programArguments = new ProgramArguments(args);
+
+                UdpService service = new UdpService();
+                service.TransmitMessage(programArguments.FilePath,programArguments.Ip,programArguments.Port);
+                
+
             
-            UdpService.TransmitMessage(programArguments.FilePath,programArguments.Ip,programArguments.Port);
-            
-            LogWriter.LogWrite("Transmission on Port: " + programArguments.Port + " to " + programArguments.Ip +
-                               "\r\nSent: " +  
-                               "\r\nSending took: " +
-                               "\r\n");
-            Console.WriteLine("\r\nLog created!");
         }
     }
 }

@@ -5,48 +5,95 @@ using Receiver.Gui;
 
 namespace Receiver
 {
-    public static class UdpService
+    public  class UdpService
     {
-        public static void ReceiveTransmission(string path, int port)
+
+        public long PacketSize { get; set; }
+
+        public long PacketCount { get; set; }
+
+        public double FileSize { get; set; }
+        
+        public TimeSpan TotalTime { get; set; }
+        
+        public int ReceivedPackets { get; set; }
+
+        public double SpeedInMbps { get; set; }
+
+        public double PacketLoss { get; set; }
+        
+        public  void ReceiveTransmission(string path, int port)
         {
-            IPEndPoint remoteIpEndPoint = new IPEndPoint(IPAddress.Any, port);
-            UdpClient udpClient = new UdpClient(remoteIpEndPoint);
-            RecieveGui gui = new RecieveGui();
-
-            Console.WriteLine("UDP Receiver ready.");
-            byte[] init = udpClient.Receive(ref remoteIpEndPoint);
-            string initPacket = Encoding.ASCII.GetString(init);
-            string[] meta = initPacket.Split("\u0000");
-            string fileName = meta[1];
-            byte[] buffer = new byte[long.Parse(meta[2])];
-            long packets = long.Parse(meta[3]);
-            gui.InitReceived(packets);
-            udpClient.Client.ReceiveTimeout = 50;
-            using (FileStream stream = File.Create(path+fileName))
+            try
             {
+                
+                
+                IPEndPoint remoteIpEndPoint = new IPEndPoint(IPAddress.Any, port);
+            
+                UdpClient udpClient = new UdpClient(remoteIpEndPoint);
+                
+                Console.WriteLine("UDP Receiver ready.");
+                byte[] init = udpClient.Receive(ref remoteIpEndPoint);
+                string initPacket = Encoding.ASCII.GetString(init);
+                string[] meta = initPacket.Split("\u0000");
+                string fileName = meta[1];
+                long packets = long.Parse(meta[3]);
+                DateTime dateTime = DateTime.Now;
+                //udpClient.Client.ReceiveTimeout = 500;
+                IPEndPoint sendRemoteIpEndPoint = remoteIpEndPoint;
+                sendRemoteIpEndPoint.Port = 12000;
+                UdpClient sendClient = new UdpClient();
                 int i = 0;
-                try
+                using (FileStream stream = File.Create(path+fileName))
                 {
-                    while (i <= packets)
+                    try
                     {
-                        byte[] data = udpClient.Receive(ref remoteIpEndPoint);
-                        //Buffer.BlockCopy(data,0,buffer,0,data.Length);
-                        stream.Write(data);
-                        i++;
+                        while (i <= packets)
+                        {
+                            byte[] data = udpClient.Receive(ref remoteIpEndPoint);
+                            //Buffer.BlockCopy(data,0,buffer,0,data.Length);
+                            stream.Write(data);
+                        
+                            sendClient.Send(Array.Empty<byte>(), sendRemoteIpEndPoint);
+                        
+                            i++;
+                        }
                     }
+                    catch (SocketException e)
+                    {
+                        Console.WriteLine("\r\n\r\nTransmission timed out!\n\r");
+                        double percent = i / (double)packets * 100;
+                        Console.WriteLine("\r\n\r\nGot " +percent+ "% of packets\n\r");
+                    }
+                    
+                    stream.Dispose();
                 }
-                catch (SocketException e)
+            
+                TotalTime = DateTime.Now - dateTime;
+                PacketCount = long.Parse(meta[3]);
+                FileSize = (double)long.Parse(meta[2])/1000000;
+                PacketSize =  long.Parse(meta[2]) / PacketCount;
+                ReceivedPackets = i -1;
+                SpeedInMbps = FileSize * 1000/(TotalTime.TotalMilliseconds );
+                double packetLoss = i - 1 / (double) packets * 100;
+                if (packetLoss > 100)
                 {
-                    Console.WriteLine("\r\n\r\nTransmission timed out!\n\r");
-                    double percent = i / (double)packets * 100;
-                    Console.WriteLine("\r\n\r\nGot " +percent+ "% of packets\n\r");
+                    PacketLoss = 0;
                 }
-                gui.NewPacket(i);
-
-                stream.Dispose();
+                else
+                {
+                    PacketLoss = 100 - packetLoss;
+                }
+                
+                udpClient.Close();
             }
-            gui.EndReceived();
-            udpClient.Close();
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+         
         }
+        
     }
 }

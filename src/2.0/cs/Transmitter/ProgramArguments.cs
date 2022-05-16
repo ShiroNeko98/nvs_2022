@@ -5,7 +5,10 @@
         public string Ip { get; set; }
         public int Port { get; set; }
         public string FilePath { get; set; }
-        private const string HelpText  = "Program Args:\r\n-ip [remote ip address]\r\n-port [remote port]\r\n-file [file path]\r\n(optional) -h Help Text";
+
+        public int Count { get; set; } = 1;
+        
+        private const string HelpText  = "Program Args:\r\n-ip [remote ip address]\r\n-port [remote port]\r\n-file [file path]\r\n -count [count]\r\n(optional) -h Help Text";
 
         public ProgramArguments(string[] args)
         {
@@ -14,16 +17,7 @@
                 Console.WriteLine(HelpText);
                 Environment.Exit(0);
             }
-
-            switch (args.Length)
-            {
-                case < 6:
-                case > 6:
-                    Console.WriteLine(HelpText);
-                    Environment.Exit(0);
-                    break;
-            }
-
+            
             try
             {
                 if (args[0].Equals("-ip"))
@@ -40,6 +34,8 @@
                 {
                     FilePath = args[5];
                 }
+
+                
             }
             catch (Exception)
             {
