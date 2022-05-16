@@ -1,6 +1,3 @@
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -8,11 +5,8 @@ import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,8 +15,8 @@ import java.util.logging.SimpleFormatter;
 public class Transmitter {
     private static final Logger LOG = Logger.getLogger("JavaTransmitterLog");
 
-    private static int SLEEP = 1;
-    private static int DATA_SIZE = 1024;
+    private static int SLEEP = 1000;
+    private static int DATA_SIZE = 10;
     private static int PORT = 11000;
 
     private final DatagramSocket datagramSocket;
@@ -102,11 +96,13 @@ public class Transmitter {
         File file = new File(filePath);
 
         // send initial packet
+        int packetCount = (int) Math.ceil(file.length()) / DATA_SIZE;
         for (int i = 0; i < 3; i++) {
             String initialData = "0" + NULL_TERMINATED +
-                                 (file.length() / DATA_SIZE) + NULL_TERMINATED +
-                                 file.getName();
-            sendAndWait(initialData);
+                                 file.getName() + NULL_TERMINATED +
+                                 file.length() + NULL_TERMINATED +
+                                 packetCount;
+            sendAndWait(initialData.getBytes());
         }
 
         // send file content
@@ -119,12 +115,12 @@ public class Transmitter {
 
         for (int i = 0; i < 3; i++) {
             String endData = "-1" + NULL_TERMINATED + hash;
-            sendAndWait(endData);
+            sendAndWait(endData.getBytes());
         }
     }
 
-    private void sendAndWait(String data) throws IOException, InterruptedException {
-        byte[] buffer = data.getBytes();
+    private void sendAndWait(byte[] buffer) throws IOException, InterruptedException {
+        //byte[] buffer = data.getBytes();
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
         datagramSocket.send(datagramPacket);
 
@@ -140,53 +136,37 @@ public class Transmitter {
      * @throws InterruptedException problem with sending packets
      */
     private byte[] sendFileContent(File file) throws IOException, InterruptedException {
-        int sequenceNumber = 1;
+        int byteRead = 0;
         int copyStartIndex = 0;
         byte[] bytesOfFile = new byte[(int) file.length()];
 
-        // read from file
         FileInputStream fileInputStream = new FileInputStream(file);
-        fileInputStream.read(bytesOfFile);
-        fileInputStream.close();
+        while (byteRead != file.length()) {
+            byte[] bFile = new byte[DATA_SIZE];
+            byteRead += fileInputStream.read(bFile);
 
-        /*ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        BufferedImage img = ImageIO.read(file);
-        ImageIO.write(img, "jpg", baos);
-        baos.flush();
+            // collect read bytes for md5 hash at the end of transmission
+            for (int i = 0; i < bFile.length; i++) {
+                if (bFile[i] == 0) {
+                    // EOF reached => no need for further copy
+                    byte[] lastDataPacket = new byte[(int) (file.length() % DATA_SIZE)];
+                    for (i = 0; i < lastDataPacket.length; i++) {
+                        lastDataPacket[i] = bFile[i];
+                    }
 
-        String base64String = Base64.getEncoder().encode(baos.toByteArray());
-        baos.close();
+                    sendAndWait(lastDataPacket);
 
-        byte[] bytearray = Base64.decode(base64String);*/
-
-        //byte[] bytesOfFile = Files.readAllBytes(file.toPath());
-
-        // send junks of data to receiver
-        while (copyStartIndex < bytesOfFile.length) {
-            String packetData = String.valueOf(sequenceNumber);
-            packetData += NULL_TERMINATED;
-            packetData += "[";
-
-            for (int j = 0; j < DATA_SIZE; j++) {
-                packetData += String.valueOf(bytesOfFile[copyStartIndex + j]);
-
-                if (copyStartIndex + j + 1 == bytesOfFile.length) {
-                    break;
+                    fileInputStream.close();
+                    return bytesOfFile;
                 }
 
-                if (j < DATA_SIZE - 1) {
-                    packetData += ",";
-                }
+                bytesOfFile[copyStartIndex + i] = bFile[i];
             }
+            copyStartIndex = byteRead;
 
-            packetData += "]";
-
-            copyStartIndex += DATA_SIZE;
-            sequenceNumber++;
-            sendAndWait(packetData);
+            sendAndWait(bFile);
         }
 
-        return bytesOfFile;
+        throw new RuntimeException();
     }
-
 }
