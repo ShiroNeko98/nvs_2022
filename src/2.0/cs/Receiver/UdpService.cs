@@ -12,7 +12,7 @@ namespace Receiver
             IPEndPoint remoteIpEndPoint = new IPEndPoint(IPAddress.Any, port);
             UdpClient udpClient = new UdpClient(remoteIpEndPoint);
             RecieveGui gui = new RecieveGui();
-            
+
             Console.WriteLine("UDP Receiver ready.");
             byte[] init = udpClient.Receive(ref remoteIpEndPoint);
             string initPacket = Encoding.ASCII.GetString(init);
@@ -22,16 +22,16 @@ namespace Receiver
             long packets = long.Parse(meta[3]);
             gui.InitReceived(packets);
             udpClient.Client.ReceiveTimeout = 50;
-            //using (MemoryStream stream = new MemoryStream())
-            //{
+            using (FileStream stream = File.Create(path+fileName))
+            {
                 int i = 0;
                 try
                 {
                     while (i <= packets)
                     {
                         byte[] data = udpClient.Receive(ref remoteIpEndPoint);
-                        Buffer.BlockCopy(data,0,buffer,0,data.Length);
-                        //stream.Write(data);
+                        //Buffer.BlockCopy(data,0,buffer,0,data.Length);
+                        stream.Write(data);
                         i++;
                     }
                 }
@@ -42,18 +42,11 @@ namespace Receiver
                     Console.WriteLine("\r\n\r\nGot " +percent+ "% of packets\n\r");
                 }
                 gui.NewPacket(i);
-                
-                using (FileStream fs = File.Create(path+fileName))
-                {
-                    fs.Write(buffer);
-                }
-                //stream.Dispose();
-            //}
-            
+
+                stream.Dispose();
+            }
             gui.EndReceived();
             udpClient.Close();
-         
         }
-        
     }
 }

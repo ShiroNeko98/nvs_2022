@@ -1,13 +1,12 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 using Receiver;
-using Receiver.Gui;
 
 namespace Transmitter
 {
     public static class UdpService
     {
-        private const int BufferSize = 4096;
+        private const int BufferSize = 256;
 
         public static void TransmitMessage(string filePath, string ip, int port)
         {
@@ -21,14 +20,15 @@ namespace Transmitter
                     byte[] buffer = new byte[BufferSize];
                     UdpClient client = new UdpClient();
                     client.Connect(ip,port);
-                    
 
                     string initPacket = "0000\u0000"  + Path.GetFileName(filePath) + "\u0000"  + fileSize + "\u0000" + packets;
+                    //Hash
                     client.Send(Encoding.ASCII.GetBytes(initPacket));
                     Thread.Sleep(5);
                     while ((stream.Read(buffer, 0, BufferSize)) > 0)
                     {
                         client.Send(buffer);
+                        //wait for confirmation
                     }
                     
                     client.Close();
