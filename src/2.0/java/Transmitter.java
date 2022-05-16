@@ -1,22 +1,13 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 public class Transmitter {
-    private static final Logger LOG = Logger.getLogger("JavaTransmitterLog");
-
     private static int SLEEP = 1000;
-    private static int DATA_SIZE = 10;
+    private static int DATA_SIZE = 10; // 4096
     private static int PORT = 11000;
 
     private final DatagramSocket datagramSocket;
@@ -29,37 +20,26 @@ public class Transmitter {
         this.inetAddress = inetAddress;
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException, NoSuchAlgorithmException {
-        //configureLogger();
-
+    public static void main(String[] args) throws IOException, InterruptedException {
         if (args.length < 2) {
             if (args[0].equals("-h")) {
                 printHelpText();
                 System.exit(0);
             }
 
-            LOG.log(Level.SEVERE, "Not enough or too many arguments");
+            System.out.println("Not enough or too many arguments");
             System.exit(1);
         }
 
         setOptionalParameters(args);
 
         // start transmitter
-        LOG.info("Starting transmission ...");
+        System.out.println("Starting transmission ...");
 
         Transmitter transmitter = new Transmitter(new DatagramSocket(), InetAddress.getByName(args[0]));
         transmitter.sendData(args[1]);
 
-        LOG.info("File transmitted. Closing program ...");
-    }
-
-    private static void configureLogger() throws IOException {
-        FileHandler fh = new FileHandler("../../logs/java/Transmitter.log");
-
-        SimpleFormatter formatter = new SimpleFormatter();
-        fh.setFormatter(formatter);
-
-        LOG.addHandler(fh);
+        System.out.println("File transmitted. Closing program ...");
     }
 
     private static void printHelpText() {
@@ -86,45 +66,38 @@ public class Transmitter {
                 i++;
                 SLEEP = Integer.parseInt(args[i]);
             } else {
-                LOG.log(Level.SEVERE, "ERROR: not supported parameter " + param + " found");
+                System.out.println("ERROR: not supported parameter " + param + " found");
                 System.exit(1);
             }
         }
     }
 
-    private void sendData(String filePath) throws IOException, InterruptedException, NoSuchAlgorithmException {
+    private void sendData(String filePath) throws IOException, InterruptedException {
         File file = new File(filePath);
 
         // send initial packet
         int packetCount = (int) Math.ceil(file.length()) / DATA_SIZE;
-        for (int i = 0; i < 3; i++) {
-            String initialData = "0" + NULL_TERMINATED +
-                                 file.getName() + NULL_TERMINATED +
-                                 file.length() + NULL_TERMINATED +
-                                 packetCount;
-            sendAndWait(initialData.getBytes());
-        }
+        String initialData = "0" + NULL_TERMINATED +
+                             file.getName() + NULL_TERMINATED +
+                             file.length() + NULL_TERMINATED +
+                             packetCount;
+        sendAndWait(initialData.getBytes());
 
         // send file content
-        byte[] bytesOfFile = sendFileContent(file);
-
-        // send end packet with md5 hash
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        md.update(bytesOfFile);
-        String hash = new BigInteger(1, md.digest()).toString(16);
-
-        for (int i = 0; i < 3; i++) {
-            String endData = "-1" + NULL_TERMINATED + hash;
-            sendAndWait(endData.getBytes());
-        }
+        sendFileContent(file);
     }
 
-    private void sendAndWait(byte[] buffer) throws IOException, InterruptedException {
-        //byte[] buffer = data.getBytes();
+    private boolean sendAndWait(byte[] buffer) throws IOException, InterruptedException {
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
         datagramSocket.send(datagramPacket);
 
-        Thread.sleep(SLEEP);
+        DatagramSocket socket = new DatagramSocket(12000);
+        datagramPacket = new DatagramPacket(buffer, buffer.length);
+        socket.receive(datagramPacket);
+
+        return buffer.length != 0;
+        // TODO timeout after 500 ms -> resend packet
+        // TODO after 3 consecutive timeouts -> end program
     }
 
     /**
