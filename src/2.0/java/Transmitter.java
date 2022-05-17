@@ -9,7 +9,7 @@ import java.rmi.UnexpectedException;
 import java.util.concurrent.TimeoutException;
 
 public class Transmitter {
-    private static int DATA_SIZE = 10; // 4096
+    private static int DATA_SIZE = 4096;
     private static int PORT = 11000;
 
     private final DatagramSocket datagramSocket;
@@ -25,7 +25,7 @@ public class Transmitter {
         this.inetAddress = inetAddress;
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException, TimeoutException {
+    public static void main(String[] args) throws IOException, TimeoutException {
         if (args.length < 2) {
             if (args[0].equals("-h")) {
                 printHelpText();
@@ -42,7 +42,7 @@ public class Transmitter {
         System.out.println("Starting transmission ...");
 
         DatagramSocket datagramSocket = new DatagramSocket(12000);
-        datagramSocket.setSoTimeout(500); // in milliseconds
+        datagramSocket.setSoTimeout(2000); // in milliseconds
 
         Transmitter transmitter = new Transmitter(datagramSocket, InetAddress.getByName(args[0]));
         transmitter.sendData(args[1]);
@@ -76,11 +76,11 @@ public class Transmitter {
         }
     }
 
-    private void sendData(String filePath) throws IOException, InterruptedException, TimeoutException {
+    private void sendData(String filePath) throws IOException, TimeoutException {
         File file = new File(filePath);
 
         // send initial packet
-        int packetCount = (int) Math.ceil(file.length()) / DATA_SIZE;
+        int packetCount = (int) Math.ceil((double) file.length() / DATA_SIZE);
         String initialData = "0" + NULL_TERMINATED +
                              file.getName() + NULL_TERMINATED +
                              file.length() + NULL_TERMINATED +
@@ -97,15 +97,15 @@ public class Transmitter {
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
         datagramSocket.send(datagramPacket);
 
-        datagramPacket = new DatagramPacket(new byte[3], 3);
         try {
+            datagramPacket = new DatagramPacket(new byte[3], 3);
             datagramSocket.receive(datagramPacket);
         } catch (SocketTimeoutException e) {
             if (timeOutRetry > 0) {
                 timeOutRetry--;
                 sendAndWait(buffer);
             } else {
-                throw new TimeoutException("");
+                throw new TimeoutException(new String(datagramPacket.getData()));
             }
         }
 
@@ -116,38 +116,15 @@ public class Transmitter {
      * Send content of file after splitting into multiple packets with fixed size.
      *
      * @param file file to be sent
-     * @return content of file in bytes
-     * @throws IOException          problem with finding or reading file
-     * @throws InterruptedException problem with sending packets
+     * @throws IOException problem with finding or reading file
      */
-    private byte[] sendFileContent(File file) throws IOException, TimeoutException {
+    private void sendFileContent(File file) throws IOException, TimeoutException {
         int byteRead = 0;
-        int copyStartIndex = 0;
-        byte[] bytesOfFile = new byte[(int) file.length()];
 
         FileInputStream fileInputStream = new FileInputStream(file);
         while (byteRead != file.length()) {
             byte[] bFile = new byte[DATA_SIZE];
             byteRead += fileInputStream.read(bFile);
-
-            // collect read bytes for md5 hash at the end of transmission
-            for (int i = 0; i < bFile.length; i++) {
-                if (bFile[i] == 0) {
-                    // EOF reached => no need for further copy
-                    byte[] lastDataPacket = new byte[(int) (file.length() % DATA_SIZE)];
-                    for (i = 0; i < lastDataPacket.length; i++) {
-                        lastDataPacket[i] = bFile[i];
-                    }
-
-                    sendAndWait(lastDataPacket);
-
-                    fileInputStream.close();
-                    return bytesOfFile;
-                }
-
-                bytesOfFile[copyStartIndex + i] = bFile[i];
-            }
-            copyStartIndex = byteRead;
 
             if (!sendAndWait(bFile)) {
                 if (packetErrorRetry > 0) {
@@ -160,7 +137,5 @@ public class Transmitter {
                 }
             }
         }
-
-        throw new RuntimeException();
     }
 }
