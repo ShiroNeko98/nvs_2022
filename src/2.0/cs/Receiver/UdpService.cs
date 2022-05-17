@@ -26,8 +26,6 @@ namespace Receiver
         {
             try
             {
-
-
                 IPEndPoint remoteIpEndPoint = new IPEndPoint(IPAddress.Any, port);
 
                 UdpClient udpClient = new UdpClient(remoteIpEndPoint);
@@ -45,7 +43,7 @@ namespace Receiver
                 UdpClient sendClient = new UdpClient();
                 int i = 1;
                 Console.WriteLine("Send wait to: " + remoteIpEndPoint.Address);
-                Console.WriteLine("Got Init. Packets:  "  + packets );
+                Console.WriteLine("Got Init. Packets: "  + packets );
                 using (FileStream stream = File.Create(path+fileName))
                 {
                     try
@@ -55,9 +53,9 @@ namespace Receiver
                             byte[] data = udpClient.Receive(ref remoteIpEndPoint);
                             //Buffer.BlockCopy(data,0,buffer,0,data.Length);
                             stream.Write(data);
-
+                            Console.WriteLine("Packets received: " + i);
                             sendClient.Send(Encoding.ASCII.GetBytes("ACK"), sendRemoteIpEndPoint);
-
+                            Console.WriteLine("ACK sent: " + i);
                             i++;
                         }
                     }
@@ -94,8 +92,6 @@ namespace Receiver
                 Console.WriteLine(e);
                 throw;
             }
-
         }
-
     }
 }

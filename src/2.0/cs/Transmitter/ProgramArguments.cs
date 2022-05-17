@@ -35,7 +35,6 @@
                     FilePath = args[5];
                 }
 
-                
             }
             catch (Exception)
             {

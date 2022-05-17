@@ -10,11 +10,8 @@ namespace Transmitter
             Console.WriteLine("-=[UDP TRANSMITTER]=-");
             ProgramArguments programArguments = new ProgramArguments(args);
 
-                UdpService service = new UdpService();
-                service.TransmitMessage(programArguments.FilePath,programArguments.Ip,programArguments.Port);
-                
-
-            
+            UdpService service = new UdpService();
+            service.TransmitMessage(programArguments.FilePath,programArguments.Ip,programArguments.Port);
         }
     }
 }
