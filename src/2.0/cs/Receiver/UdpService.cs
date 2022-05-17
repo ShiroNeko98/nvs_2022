@@ -37,13 +37,15 @@ namespace Receiver
                 string initPacket = Encoding.ASCII.GetString(init);
                 string[] meta = initPacket.Split("\u0000");
                 string fileName = meta[1];
-                long packets = long.Parse(meta[3]);
+                int packets = int.Parse(meta[3]);
                 DateTime dateTime = DateTime.Now;
                 //udpClient.Client.ReceiveTimeout = 500;
                 IPEndPoint sendRemoteIpEndPoint = remoteIpEndPoint;
                 sendRemoteIpEndPoint.Port = 12000;
                 UdpClient sendClient = new UdpClient();
                 int i = 1;
+                Console.WriteLine("Send wait to: " + remoteIpEndPoint.Address);
+                Console.WriteLine("Got Init. Packets:  "  + packets );
                 using (FileStream stream = File.Create(path+fileName))
                 {
                     try
