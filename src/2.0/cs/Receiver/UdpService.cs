@@ -13,25 +13,25 @@ namespace Receiver
         public long PacketCount { get; set; }
 
         public double FileSize { get; set; }
-        
+
         public TimeSpan TotalTime { get; set; }
-        
+
         public int ReceivedPackets { get; set; }
 
         public double SpeedInMbps { get; set; }
 
         public double PacketLoss { get; set; }
-        
+
         public  void ReceiveTransmission(string path, int port)
         {
             try
             {
-                
-                
+
+
                 IPEndPoint remoteIpEndPoint = new IPEndPoint(IPAddress.Any, port);
-            
+
                 UdpClient udpClient = new UdpClient(remoteIpEndPoint);
-                
+
                 Console.WriteLine("UDP Receiver ready.");
                 byte[] init = udpClient.Receive(ref remoteIpEndPoint);
                 string initPacket = Encoding.ASCII.GetString(init);
@@ -53,9 +53,9 @@ namespace Receiver
                             byte[] data = udpClient.Receive(ref remoteIpEndPoint);
                             //Buffer.BlockCopy(data,0,buffer,0,data.Length);
                             stream.Write(data);
-                        
-                            sendClient.Send(Array.Empty<byte>(), sendRemoteIpEndPoint);
-                        
+
+                            sendClient.Send(Encoding.ASCII.GetBytes("ACK"), sendRemoteIpEndPoint);
+
                             i++;
                         }
                     }
@@ -65,10 +65,10 @@ namespace Receiver
                         double percent = i / (double)packets * 100;
                         Console.WriteLine("\r\n\r\nGot " +percent+ "% of packets\n\r");
                     }
-                    
+
                     stream.Dispose();
                 }
-            
+
                 TotalTime = DateTime.Now - dateTime;
                 PacketCount = long.Parse(meta[3]);
                 FileSize = (double)long.Parse(meta[2])/1000000;
@@ -84,7 +84,7 @@ namespace Receiver
                 {
                     PacketLoss = 100 - packetLoss;
                 }
-                
+
                 udpClient.Close();
             }
             catch (Exception e)
@@ -92,8 +92,8 @@ namespace Receiver
                 Console.WriteLine(e);
                 throw;
             }
-         
+
         }
-        
+
     }
 }

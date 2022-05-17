@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
+import java.rmi.UnexpectedException;
+import java.util.concurrent.TimeoutException;
 
 public class Transmitter {
     private static int DATA_SIZE = 10; // 4096
@@ -14,12 +17,15 @@ public class Transmitter {
 
     private final String NULL_TERMINATED = "\u0000";
 
+    private int timeOutRetry = 3;
+    private int packetErrorRetry = 1;
+
     public Transmitter(DatagramSocket datagramSocket, InetAddress inetAddress) {
         this.datagramSocket = datagramSocket;
         this.inetAddress = inetAddress;
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException, InterruptedException, TimeoutException {
         if (args.length < 2) {
             if (args[0].equals("-h")) {
                 printHelpText();
@@ -35,7 +41,10 @@ public class Transmitter {
         // start transmitter
         System.out.println("Starting transmission ...");
 
-        Transmitter transmitter = new Transmitter(new DatagramSocket(), InetAddress.getByName(args[0]));
+        DatagramSocket datagramSocket = new DatagramSocket(12000);
+        datagramSocket.setSoTimeout(500); // in milliseconds
+
+        Transmitter transmitter = new Transmitter(datagramSocket, InetAddress.getByName(args[0]));
         transmitter.sendData(args[1]);
 
         System.out.println("File transmitted. Closing program ...");
@@ -67,7 +76,7 @@ public class Transmitter {
         }
     }
 
-    private void sendData(String filePath) throws IOException, InterruptedException {
+    private void sendData(String filePath) throws IOException, InterruptedException, TimeoutException {
         File file = new File(filePath);
 
         // send initial packet
@@ -76,23 +85,31 @@ public class Transmitter {
                              file.getName() + NULL_TERMINATED +
                              file.length() + NULL_TERMINATED +
                              packetCount;
-        sendAndWait(initialData.getBytes());
+        DatagramPacket datagramPacket =
+                new DatagramPacket(initialData.getBytes(), initialData.getBytes().length, inetAddress, PORT);
+        datagramSocket.send(datagramPacket);
 
         // send file content
         sendFileContent(file);
     }
 
-    private boolean sendAndWait(byte[] buffer) throws IOException, InterruptedException {
+    private boolean sendAndWait(byte[] buffer) throws IOException, TimeoutException {
         DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
         datagramSocket.send(datagramPacket);
 
-        DatagramSocket socket = new DatagramSocket(12000);
-        datagramPacket = new DatagramPacket(buffer, buffer.length);
-        socket.receive(datagramPacket);
+        datagramPacket = new DatagramPacket(new byte[3], 3);
+        try {
+            datagramSocket.receive(datagramPacket);
+        } catch (SocketTimeoutException e) {
+            if (timeOutRetry > 0) {
+                timeOutRetry--;
+                sendAndWait(buffer);
+            } else {
+                throw new TimeoutException("");
+            }
+        }
 
-        return buffer.length != 0;
-        // TODO timeout after 500 ms -> resend packet
-        // TODO after 3 consecutive timeouts -> end program
+        return new String(datagramPacket.getData()).equals("ACK");
     }
 
     /**
@@ -103,7 +120,7 @@ public class Transmitter {
      * @throws IOException          problem with finding or reading file
      * @throws InterruptedException problem with sending packets
      */
-    private byte[] sendFileContent(File file) throws IOException, InterruptedException {
+    private byte[] sendFileContent(File file) throws IOException, TimeoutException {
         int byteRead = 0;
         int copyStartIndex = 0;
         byte[] bytesOfFile = new byte[(int) file.length()];
@@ -132,7 +149,16 @@ public class Transmitter {
             }
             copyStartIndex = byteRead;
 
-            sendAndWait(bFile);
+            if (!sendAndWait(bFile)) {
+                if (packetErrorRetry > 0) {
+                    System.out.println("Error during transmission or on receiver side\n" +
+                                       "Retry sending packet once ...");
+                    packetErrorRetry--;
+                    sendAndWait(bFile);
+                } else {
+                    throw new UnexpectedException("Transmission not acknowledged by receiver");
+                }
+            }
         }
 
         throw new RuntimeException();
