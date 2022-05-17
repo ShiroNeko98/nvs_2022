@@ -5,7 +5,7 @@ import time
 from socket import *
 
 #socket settings
-host='10.0.0.189'
+host='0.0.0.0'
 #port = int(sys.argv[1])
 port = 11000
 s = socket(AF_INET,SOCK_DGRAM)
