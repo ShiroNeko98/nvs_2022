@@ -21,7 +21,7 @@ namespace Transmitter
             client.Client.SendTimeout = 500;
             client.Connect(ip,port);
 
-            IPEndPoint remoteIpEndPoint = new IPEndPoint(IPAddress.Parse(ip), 12000);
+            IPEndPoint remoteIpEndPoint = new IPEndPoint(IPAddress.Any, 12000);
             UdpClient waitClient = new UdpClient(remoteIpEndPoint);
              
             waitClient.Client.ReceiveTimeout = 500;

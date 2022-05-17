@@ -43,7 +43,7 @@ namespace Receiver
                 IPEndPoint sendRemoteIpEndPoint = remoteIpEndPoint;
                 sendRemoteIpEndPoint.Port = 12000;
                 UdpClient sendClient = new UdpClient();
-                int i = 0;
+                int i = 1;
                 using (FileStream stream = File.Create(path+fileName))
                 {
                     try
