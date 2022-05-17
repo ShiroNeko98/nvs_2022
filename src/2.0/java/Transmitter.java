@@ -5,11 +5,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
-import java.rmi.UnexpectedException;
 import java.util.concurrent.TimeoutException;
 
 public class Transmitter {
-    private static int DATA_SIZE = 4096;
+    private static int DATA_SIZE = 1472;
     private static int PORT = 11000;
 
     private final DatagramSocket datagramSocket;
@@ -126,15 +125,11 @@ public class Transmitter {
             byte[] bFile = new byte[DATA_SIZE];
             byteRead += fileInputStream.read(bFile);
 
-            if (!sendAndWait(bFile)) {
-                if (packetErrorRetry > 0) {
-                    System.out.println("Error during transmission or on receiver side\n" +
-                                       "Retry sending packet once ...");
-                    packetErrorRetry--;
-                    sendAndWait(bFile);
-                } else {
-                    throw new UnexpectedException("Transmission not acknowledged by receiver");
-                }
+            if (!sendAndWait(bFile) && packetErrorRetry > 0) {
+                System.out.println("Error during transmission or on receiver side\n" +
+                                   "Retry sending packet once ...");
+                packetErrorRetry--;
+                sendAndWait(bFile);
             }
         }
     }
