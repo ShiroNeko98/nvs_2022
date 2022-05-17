@@ -6,7 +6,6 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class Transmitter {
-    private static int SLEEP = 1000;
     private static int DATA_SIZE = 10; // 4096
     private static int PORT = 11000;
 
@@ -48,8 +47,7 @@ public class Transmitter {
                 "Optional:\n" +
                 "-h ... print help page\n" +
                 "-s <integer> ... set size of data\n" +
-                "-p <integer> ... set port\n" +
-                "-sl <integer> ... sleep timer");
+                "-p <integer> ... set port\n");
     }
 
     private static void setOptionalParameters(String[] args) {
@@ -62,9 +60,6 @@ public class Transmitter {
             } else if (param.equals("-p")) {
                 i++;
                 PORT = Integer.parseInt(args[i]);
-            } else if (param.equals("-sl")) {
-                i++;
-                SLEEP = Integer.parseInt(args[i]);
             } else {
                 System.out.println("ERROR: not supported parameter " + param + " found");
                 System.exit(1);
