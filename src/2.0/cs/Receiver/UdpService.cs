@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using Receiver.Gui;
 
 namespace Receiver
 {
@@ -9,19 +8,13 @@ namespace Receiver
     {
 
         public long PacketSize { get; set; }
-
         public long PacketCount { get; set; }
-
         public double FileSize { get; set; }
-
         public TimeSpan TotalTime { get; set; }
-
         public int ReceivedPackets { get; set; }
-
         public double SpeedInMbps { get; set; }
-
         public double PacketLoss { get; set; }
-
+        
         public  void ReceiveTransmission(string path, int port)
         {
             try
@@ -35,6 +28,7 @@ namespace Receiver
                 string initPacket = Encoding.ASCII.GetString(init);
                 string[] meta = initPacket.Split("\u0000");
                 string fileName = meta[1];
+                string seq = meta[0];
                 int packets = int.Parse(meta[3]);
                 DateTime dateTime = DateTime.Now;
                 
@@ -43,18 +37,22 @@ namespace Receiver
                 IPEndPoint sendRemoteIpEndPoint = remoteIpEndPoint;
                 sendRemoteIpEndPoint.Port = 12000;
                 UdpClient sendClient = new UdpClient();
+                sendClient.Send(Encoding.ASCII.GetBytes(seq), sendRemoteIpEndPoint);
                 int i = 1;
                 Console.WriteLine("Send wait to: " + remoteIpEndPoint.Address);
-                Console.WriteLine("Got Init. Packets incoming: "  + packets );
+                Console.WriteLine("Init received. Packets incoming: " + packets );
                 using (FileStream stream = File.Create(path+fileName))
                 {
                     try
                     {
                         while (i <= packets)
                         {
-                            byte[] data = udpClient.Receive(ref remoteIpEndPoint);
+                            byte[] dataPacketWithSeq = udpClient.Receive(ref remoteIpEndPoint);
+                            string dataPacketString = Encoding.ASCII.GetString(dataPacketWithSeq);
+                            string[] dataPacketStringArray = dataPacketString.Split("\u0000");
+                            byte[] data = Convert.FromBase64String(dataPacketStringArray[1]);
                             stream.Write(data);
-                            sendClient.Send(Encoding.ASCII.GetBytes("ACK"), sendRemoteIpEndPoint);
+                            sendClient.Send(Encoding.ASCII.GetBytes(dataPacketStringArray[0]), sendRemoteIpEndPoint);
                             i++;
                         }
                     }
