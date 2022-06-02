@@ -6,15 +6,13 @@ namespace Transmitter
 {
     public  class UdpService
     {
-        private const int BufferSize = 1024;
-
-        public  void TransmitMessage(string filePath, string ip, int port)
+        public  void TransmitMessage(string filePath, string ip, int port, int bufferSize)
         {
             FileInfo fi = new FileInfo(filePath);
             long fileSize = fi.Length;
-            long packets =  (long)Math.Ceiling((double)(fi.Length / BufferSize));
+            long packets =  (long)Math.Ceiling((double)(fi.Length / bufferSize));
             Console.WriteLine("Packets sending: " + packets);    
-            byte[] buffer = new byte[BufferSize];
+            byte[] buffer = new byte[bufferSize];
             UdpClient client = new UdpClient();
             client.Client.SendTimeout = 500;
             client.Connect(ip,port);
@@ -32,7 +30,7 @@ namespace Transmitter
             {
                 SendAndWait(client,waitClient,remoteIpEndPoint,Encoding.ASCII.GetBytes(initPacket), again, seqi);
                 //client.Send(Encoding.ASCII.GetBytes(initPacket));
-                while ((stream.Read(buffer, 0, BufferSize)) > 0)
+                while ((stream.Read(buffer, 0, bufferSize)) > 0)
                 {
                     seq++;
                     string buffString = Convert.ToBase64String(buffer);

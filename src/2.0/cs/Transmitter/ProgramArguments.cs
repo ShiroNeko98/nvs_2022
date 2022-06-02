@@ -5,12 +5,13 @@
         public string Ip { get; set; }
         public int Port { get; set; }
         public string FilePath { get; set; }
+        public int BufferSize { get; set; }
 
-        private const string HelpText  = "Program Args:\r\n-ip [remote ip address]\r\n-port [remote port]\r\n-file [file path]\r\n(optional) -h Help Text";
+        private const string HelpText  = "Program Args:\r\n-ip [remote ip address]\r\n-port [remote port]\r\n-file [file path]\r\n-buff [buffersize]\r\n(optional) -h Help Text";
 
         public ProgramArguments(string[] args)
         {
-            if (args.Length is 0 or 1)
+            if (args.Length is 0 or 1 or 3)
             {
                 Console.WriteLine(HelpText);
                 Environment.Exit(0);
@@ -31,6 +32,11 @@
                 if (args[4].Equals("-file"))
                 {
                     FilePath = args[5];
+                }
+
+                if (args[6].Equals("-buff"))
+                {
+                    BufferSize = int.Parse(args[7]);
                 }
             }
             catch (Exception)
