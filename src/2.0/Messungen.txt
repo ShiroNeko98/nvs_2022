@@ -1,0 +1,103 @@
+cs-cs:
+	local:
+		1MB:
+			1k:	20mbps
+			16k:	44mbps
+			64k:	78mbps
+		100MB:	1k:	35mbps
+			16k:	141mbps
+			64k:	155mbps
+	WLAN:
+		1MB:
+			1k:	1mbps
+			16k:	3mbps
+			64k:	3mbps
+		100MB:	1k:	2mbps
+			16k:	3mbps
+			64k:	3mbps
+	ETH:
+		1MB:
+			1k:	3mbps
+			16k:	5mbps
+			64k:	5mbps
+		100MB:	1k:	4mbps
+			16k:	5mbps
+			64k:	6mbps
+
+java-cs:
+	local:
+		1MB:
+			1k:	
+			16k:	
+			64k:	
+		100MB:	1k:	
+			16k:	
+			64k:	
+	WLAN:
+		1MB:
+			1k:	
+			16k:	
+			64k:	
+		100MB:	1k:	
+			16k:	
+			64k:	
+	ETH:
+		1MB:
+			1k:	
+			16k:	
+			64k:	
+		100MB:	1k:	
+			16k:	
+			64k:
+
+java-py:
+	local:
+		1MB:
+			1k:	
+			16k:	
+			64k:	
+		100MB:	1k:	
+			16k:	
+			64k:	
+	WLAN:
+		1MB:
+			1k:	
+			16k:	
+			64k:	
+		100MB:	1k:	
+			16k:	
+			64k:	
+	ETH:
+		1MB:
+			1k:	
+			16k:	
+			64k:	
+		100MB:	1k:	
+			16k:	
+			64k:
+
+cs-py:
+	local:
+		1MB:
+			1k:	
+			16k:	
+			64k:	
+		100MB:	1k:	
+			16k:	
+			64k:	
+	WLAN:
+		1MB:
+			1k:	
+			16k:	
+			64k:	
+		100MB:	1k:	
+			16k:	
+			64k:	
+	ETH:
+		1MB:
+			1k:	
+			16k:	
+			64k:	
+		100MB:	1k:	
+			16k:	
+			64k:
