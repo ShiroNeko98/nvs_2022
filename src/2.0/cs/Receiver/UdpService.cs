@@ -50,7 +50,7 @@ namespace Receiver
                             byte[] dataPacketWithSeq = udpClient.Receive(ref remoteIpEndPoint);
                             string dataPacketString = Encoding.ASCII.GetString(dataPacketWithSeq);
                             string[] dataPacketStringArray = dataPacketString.Split("\u0000");
-                            byte[] data = Encoding.ASCII.GetBytes(dataPacketStringArray[1]);
+                            byte[] data = Convert.FromBase64String(dataPacketStringArray[1]);
                             stream.Write(data);
                             sendClient.Send(Encoding.ASCII.GetBytes(dataPacketStringArray[0]), sendRemoteIpEndPoint);
                             i++;

@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.concurrent.TimeoutException;
 
 public class Transmitter {
@@ -114,7 +115,7 @@ public class Transmitter {
             byteRead += fileInputStream.read(bFile);
 
             // concat sequence number and data
-            String data = sequenceNumber + NULL_TERMINATED + new String(bFile);
+            String data = sequenceNumber + NULL_TERMINATED + Base64.getEncoder().encodeToString(bFile);
             int sequenceNumberDigit = String.valueOf(sequenceNumber).length();
 
             if (sendAndWait(data.getBytes(), sequenceNumberDigit) != sequenceNumber && packetErrorRetry > 0) {
