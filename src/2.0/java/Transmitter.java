@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 
 public class Transmitter {
@@ -24,7 +25,7 @@ public class Transmitter {
         this.inetAddress = inetAddress;
     }
 
-    public static void main(String[] args) throws IOException, TimeoutException {
+    public static void main(String[] args) throws IOException, TimeoutException, InterruptedException {
         if (args.length < 2) {
             if (args[0].equals("-h")) {
                 printHelpText();
@@ -54,7 +55,7 @@ public class Transmitter {
                 "The program must be executed like: java Transmitter <ip address> <path of file> [optional]\n\n" +
                 "Optional:\n" +
                 "-h ... print help page\n" +
-                "-s <integer> ... set size of data\n" +
+                "-buff <integer> ... set size of data\n" +
                 "-p <integer> ... set port\n");
     }
 
@@ -62,7 +63,7 @@ public class Transmitter {
         for (int i = 2; i < args.length; i++) {
             String param = args[i];
 
-            if (param.equals("-s")) {
+            if (param.equals("-buff")) {
                 i++;
                 DATA_SIZE = Integer.parseInt(args[i]);
             } else if (param.equals("-p")) {
@@ -75,7 +76,7 @@ public class Transmitter {
         }
     }
 
-    private void sendData(String filePath) throws IOException, TimeoutException {
+    private void sendData(String filePath) throws IOException, TimeoutException, InterruptedException {
         File file = new File(filePath);
 
         // send initial packet
@@ -84,31 +85,17 @@ public class Transmitter {
                              file.getName() + NULL_TERMINATED +
                              file.length() + NULL_TERMINATED +
                              packetCount;
-        DatagramPacket datagramPacket =
-                new DatagramPacket(initialData.getBytes(), initialData.getBytes().length, inetAddress, PORT);
-        datagramSocket.send(datagramPacket);
-
-        // send file content
-        sendFileContent(file);
-    }
-
-    private boolean sendAndWait(byte[] buffer) throws IOException, TimeoutException {
-        DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
-        datagramSocket.send(datagramPacket);
-
-        try {
-            datagramPacket = new DatagramPacket(new byte[3], 3);
-            datagramSocket.receive(datagramPacket);
-        } catch (SocketTimeoutException e) {
-            if (timeOutRetry > 0) {
-                timeOutRetry--;
-                sendAndWait(buffer);
-            } else {
-                throw new TimeoutException(new String(datagramPacket.getData()));
+        if (sendAndWait(initialData.getBytes(), 1) == 0) {
+            // init successful => send file content
+            sendFileContent(file);
+        } else {
+            // init packet failed => try again once
+            Thread.sleep(1000);
+            System.out.println("WARNING: try to resend init packet ...");
+            if (sendAndWait(initialData.getBytes(), 1) == 0) {
+                sendFileContent(file);
             }
         }
-
-        return new String(datagramPacket.getData()).equals("ACK");
     }
 
     /**
@@ -119,18 +106,45 @@ public class Transmitter {
      */
     private void sendFileContent(File file) throws IOException, TimeoutException {
         int byteRead = 0;
+        int sequenceNumber = 1;
 
         FileInputStream fileInputStream = new FileInputStream(file);
         while (byteRead != file.length()) {
             byte[] bFile = new byte[DATA_SIZE];
             byteRead += fileInputStream.read(bFile);
 
-            if (!sendAndWait(bFile) && packetErrorRetry > 0) {
-                System.out.println("Error during transmission or on receiver side\n" +
+            // concat sequence number and data
+            String data = sequenceNumber + NULL_TERMINATED + new String(bFile);
+            int sequenceNumberDigit = String.valueOf(sequenceNumber).length();
+
+            if (sendAndWait(data.getBytes(), sequenceNumberDigit) != sequenceNumber && packetErrorRetry > 0) {
+                System.out.println("WARNING: Error during transmission or on receiver side\n" +
                                    "Retry sending packet once ...");
                 packetErrorRetry--;
-                sendAndWait(bFile);
+                sendAndWait(bFile, sequenceNumberDigit);
+            } else {
+                sequenceNumber++;
             }
         }
+    }
+
+    private int sendAndWait(byte[] buffer, int ackLength) throws IOException, TimeoutException {
+        DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, PORT);
+        datagramSocket.send(datagramPacket);
+
+        try {
+            datagramPacket = new DatagramPacket(new byte[ackLength], ackLength);
+            datagramSocket.receive(datagramPacket);
+        } catch (SocketTimeoutException e) {
+            if (timeOutRetry > 0) {
+                timeOutRetry--;
+                sendAndWait(buffer, ackLength);
+            } else {
+                throw new TimeoutException(new String(datagramPacket.getData()));
+            }
+        }
+
+        String ack = new String(datagramPacket.getData(), StandardCharsets.US_ASCII);
+        return Integer.parseInt(ack);
     }
 }

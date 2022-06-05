@@ -8,10 +8,8 @@ Check whether Java is installed on the machine with: `java -version`
 
 Optional:
 -h: print help page  
--s <integer>: size of data, default: 1472  
--p <integer>: port number, default: 11000  
--sl <integer>: sleep timer in milliseconds, default: 1000
-
+-buff <integer>: size of data, default: 1472  
+-p <integer>: port number, default: 11000
 
 ### cs Receiver
 `Receiver.exe -dir <path> -port <port>`  
@@ -26,7 +24,7 @@ python receiver.py port
 
 
 ## Fehlererkennung bei UDP Paketverdopplung
-Der Fall tritt auf wenn wir keine Sequenznummer im Datenpaket haben:
+Der Fall tritt auf, wenn wir keine Sequenznummer im Datenpaket haben:
 1. Transmitter schickt das x. Paket
 2. UDP verdoppelte das Paket, dh. der Receiver bekommt 2 Mal das gleiche Paket
 3. Receiver bekommt 1. x Paket und sendet Sequenznummer x als ACK zurück

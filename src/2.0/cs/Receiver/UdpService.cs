@@ -14,7 +14,7 @@ namespace Receiver
         public int ReceivedPackets { get; set; }
         public double SpeedInMbps { get; set; }
         public double PacketLoss { get; set; }
-        
+
         public  void ReceiveTransmission(string path, int port)
         {
             try
@@ -31,9 +31,9 @@ namespace Receiver
                 string seq = meta[0];
                 int packets = int.Parse(meta[3]);
                 DateTime dateTime = DateTime.Now;
-                
+
                 //udpClient.Client.ReceiveTimeout = 500;
-                
+
                 IPEndPoint sendRemoteIpEndPoint = remoteIpEndPoint;
                 sendRemoteIpEndPoint.Port = 12000;
                 UdpClient sendClient = new UdpClient();
@@ -50,7 +50,7 @@ namespace Receiver
                             byte[] dataPacketWithSeq = udpClient.Receive(ref remoteIpEndPoint);
                             string dataPacketString = Encoding.ASCII.GetString(dataPacketWithSeq);
                             string[] dataPacketStringArray = dataPacketString.Split("\u0000");
-                            byte[] data = Convert.FromBase64String(dataPacketStringArray[1]);
+                            byte[] data = Encoding.ASCII.GetBytes(dataPacketStringArray[1]);
                             stream.Write(data);
                             sendClient.Send(Encoding.ASCII.GetBytes(dataPacketStringArray[0]), sendRemoteIpEndPoint);
                             i++;
