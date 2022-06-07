@@ -69,12 +69,12 @@ java-py:
 			49k:	5mbps
 	ETH:
 		1MB:
-			1k:	
-			16k:	
-			64k:	
-		100MB:	1k:	
-			16k:	
-			64k:
+			1k:	2.4mbps
+			16k:	15mbps
+			49k:	26mbps
+		100MB:	1k:	3.5mbps
+			16k:	21mbps
+			49k: 	31mbps
 
 cs-py:
 	local:
@@ -95,9 +95,9 @@ cs-py:
 			49k:	4.4mbps
 	ETH:
 		1MB:
-			1k:	
-			16k:	
-			64k:	
-		100MB:	1k:	
-			16k:	
-			64k:
+			1k:	4mbps
+			16k:	19mbps
+			64k:	23mbps
+		100MB:	1k:	5mbps
+			16k:	24mbps
+			49k:	33mbps
