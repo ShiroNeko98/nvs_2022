@@ -53,12 +53,12 @@ java-cs:
 java-py:
 	local:
 		1MB:
-			1k:	
-			16k:	
-			64k:	
-		100MB:	1k:	
-			16k:	
-			64k:	
+			1k:	9mbps
+			16k:	35mbps
+			64k:	55mbps
+		100MB:	1k:	14mbps
+			16k:	91mbps
+			64k:	101mbps
 	WLAN:
 		1MB:
 			1k:	0.37mbps
