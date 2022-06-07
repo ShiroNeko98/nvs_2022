@@ -61,12 +61,12 @@ java-py:
 			64k:	
 	WLAN:
 		1MB:
-			1k:	
-			16k:	
-			64k:	
-		100MB:	1k:	
-			16k:	
-			64k:	
+			1k:	0.37mbps
+			16k:	3.6mbps
+			49k:	5.4mbps
+		100MB:	1k:	0.4mbps
+			16k:	3.2mbps
+			49k:	5mbps
 	ETH:
 		1MB:
 			1k:	
@@ -79,20 +79,20 @@ java-py:
 cs-py:
 	local:
 		1MB:
-			1k:	
-			16k:	
-			64k:	
-		100MB:	1k:	
-			16k:	
-			64k:	
+			1k:	20.3mbps
+			16k:	39.8mbps
+			49k:	48mbps
+		100MB:	1k:	35mbps
+			16k:	93mbps
+			49k:	105mbps
 	WLAN:
 		1MB:
-			1k:	
-			16k:	
-			64k:	
-		100MB:	1k:	
-			16k:	
-			64k:	
+			1k:	0.3mbps
+			16k:	2.06mbps
+			64k:	3.35mbps
+		100MB:	1k:	0.5mbps
+			16k:	4mbps
+			49k:	4.4mbps
 	ETH:
 		1MB:
 			1k:	
