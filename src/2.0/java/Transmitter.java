@@ -114,8 +114,8 @@ public class Transmitter {
         int sequenceNumber = 1;
 
         FileInputStream fileInputStream = new FileInputStream(file);
-        while (lastByteRead != -1) {
-            lastByteRead = sendFileChunks(fileInputStream, sequenceNumber);
+        while (fileInputStream.available() == 0) {
+            sendFileChunks(fileInputStream, sequenceNumber);
             sequenceNumber++;
         }
     }
@@ -124,7 +124,7 @@ public class Transmitter {
      * @param fileInputStream
      * @return last byte read from file
      */
-    private int sendFileChunks(FileInputStream fileInputStream, int sequenceNumber) throws IOException,
+    private void sendFileChunks(FileInputStream fileInputStream, int sequenceNumber) throws IOException,
             TimeoutException {
         List<Byte> dataBuffer = new ArrayList<>();
 
@@ -137,10 +137,15 @@ public class Transmitter {
         // concat null terminated
         dataBuffer.add((byte) 0);
 
-        // concat file content
-        byte byteRead = 0;
+        // concat chunk of file content
+        byte[] fileContent = new byte[DATA_SIZE - dataBuffer.size()];
+        fileInputStream.read(fileContent);
+
+        /*byte byteRead = 0;
         for (int i = dataBuffer.size(); i < DATA_SIZE; i++) {
-            if (fileInputStream.available() == 0) {
+            byteRead = (byte) fileInputStream.read();
+
+            if (byteRead == -1) {
                 // EOF reached
                 if (dataBuffer.size() > dataBuffer.indexOf((byte) 0) + 1) {
                     // data exists in data buffer
@@ -150,15 +155,18 @@ public class Transmitter {
                 return -1;
             }
 
-            byteRead = (byte) fileInputStream.read();
             dataBuffer.add(byteRead);
-        }
+        }*/
 
         // data read for datagram
-        byte[] dataBufferArr = new byte[dataBuffer.size()];
+        byte[] dataBufferArr = new byte[dataBuffer.size() + fileContent.length];
         for (int i = 0; i < dataBuffer.size(); i++) {
             dataBufferArr[i] = dataBuffer.get(i);
         }
+        for (int i = 0; i < fileContent.length; i++) {
+            dataBufferArr[dataBuffer.size() + i] = fileContent[i];
+        }
+
         if (sendAndWait(dataBufferArr, sequenceBytes.length) != sequenceNumber) {
             if (packetErrorRetry > 0) {
                 System.out.println("WARNING: Error during transmission or on receiver side\n" +
@@ -171,7 +179,7 @@ public class Transmitter {
             }
         }
 
-        return byteRead;
+       // return fileInputStream.available();
     }
 
     private int sendAndWait(byte[] buffer, int ackLength) throws IOException, TimeoutException {
