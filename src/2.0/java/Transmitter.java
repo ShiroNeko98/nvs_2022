@@ -6,11 +6,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 public class Transmitter {
-    private static int DATA_SIZE = 1472;
+    private static int DATA_SIZE = 60000;
     private static int PORT = 11000;
 
     private final DatagramSocket datagramSocket;
@@ -43,7 +44,7 @@ public class Transmitter {
         System.out.println("Starting transmission ...");
 
         DatagramSocket datagramSocket = new DatagramSocket(12000);
-        datagramSocket.setSoTimeout(2000); // in milliseconds
+        datagramSocket.setSoTimeout(20000); // in milliseconds
 
         Transmitter transmitter = new Transmitter(datagramSocket, InetAddress.getByName(args[0]));
         transmitter.sendData(args[1]);
@@ -97,6 +98,9 @@ public class Transmitter {
                 sendFileContent(file);
             }
         }
+
+        // send end packet
+        sendAndWait(new byte[]{69, 78, 68}, 2);
     }
 
     /**
@@ -106,27 +110,68 @@ public class Transmitter {
      * @throws IOException problem with finding or reading file
      */
     private void sendFileContent(File file) throws IOException, TimeoutException {
-        int byteRead = 0;
+        int lastByteRead = 0;
         int sequenceNumber = 1;
 
         FileInputStream fileInputStream = new FileInputStream(file);
-        while (byteRead != file.length()) {
-            byte[] bFile = new byte[DATA_SIZE];
-            byteRead += fileInputStream.read(bFile);
+        while (lastByteRead != -1) {
+            lastByteRead = sendFileChunks(fileInputStream, sequenceNumber);
+            sequenceNumber++;
+        }
+    }
 
-            // concat sequence number and data
-            String data = sequenceNumber + NULL_TERMINATED + Base64.getEncoder().encodeToString(bFile);
-            int sequenceNumberDigit = String.valueOf(sequenceNumber).length();
+    /**
+     * @param fileInputStream
+     * @return last byte read from file
+     */
+    private int sendFileChunks(FileInputStream fileInputStream, int sequenceNumber) throws IOException,
+            TimeoutException {
+        List<Byte> dataBuffer = new ArrayList<>();
 
-            if (sendAndWait(data.getBytes(), sequenceNumberDigit) != sequenceNumber && packetErrorRetry > 0) {
+        // concat sequence number
+        byte[] sequenceBytes = String.valueOf(sequenceNumber).getBytes();
+        for (byte b : sequenceBytes) {
+            dataBuffer.add(b);
+        }
+
+        // concat null terminated
+        dataBuffer.add((byte) 0);
+
+        // concat file content
+        byte byteRead = 0;
+        for (int i = dataBuffer.size(); i < DATA_SIZE; i++) {
+            if (fileInputStream.available() == 0) {
+                // EOF reached
+                if (dataBuffer.size() > dataBuffer.indexOf((byte) 0) + 1) {
+                    // data exists in data buffer
+                    break;
+                }
+
+                return -1;
+            }
+
+            byteRead = (byte) fileInputStream.read();
+            dataBuffer.add(byteRead);
+        }
+
+        // data read for datagram
+        byte[] dataBufferArr = new byte[dataBuffer.size()];
+        for (int i = 0; i < dataBuffer.size(); i++) {
+            dataBufferArr[i] = dataBuffer.get(i);
+        }
+        if (sendAndWait(dataBufferArr, sequenceBytes.length) != sequenceNumber) {
+            if (packetErrorRetry > 0) {
                 System.out.println("WARNING: Error during transmission or on receiver side\n" +
                                    "Retry sending packet once ...");
                 packetErrorRetry--;
-                sendAndWait(bFile, sequenceNumberDigit);
+                sendAndWait(dataBufferArr, sequenceBytes.length);
             } else {
-                sequenceNumber++;
+                System.out.println("ERROR: Could not send packet " + sequenceNumber);
+                packetErrorRetry = 1;
             }
         }
+
+        return byteRead;
     }
 
     private int sendAndWait(byte[] buffer, int ackLength) throws IOException, TimeoutException {
